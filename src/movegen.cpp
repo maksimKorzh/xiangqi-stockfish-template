@@ -344,22 +344,24 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
-
-  Color us = pos.side_to_move();
+  std::cout << "generate moves" << moveList << "\n";
+  
+  /*Color us = pos.side_to_move();
   Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
   Square ksq = pos.square<KING>(us);
   ExtMove* cur = moveList;
 
   moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)
                             : generate<NON_EVASIONS>(pos, moveList);
+  
   while (cur != moveList)
       if (  ((pinned && pinned & from_sq(*cur)) || from_sq(*cur) == ksq || type_of(*cur) == EN_PASSANT)
           && !pos.legal(*cur))
           *cur = (--moveList)->move;
       else
           ++cur;
-
+  */
   return moveList;
 }
 
-} // namespace Stockfish
+} // namespace Stockfish`

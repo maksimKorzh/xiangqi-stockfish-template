@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
           
    =============================
   \*****************************/
-
+  
   // ascii character piece representation
   const char *PIECE_TO_CHAR[] = {
     ".", "P", "A", "B", "N", "C", "R", "K", "p", "a", "b", "n", "c", "r", "k", " "
@@ -76,7 +76,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
       XQSquare xq_square = (XQSquare)(rank * 11 + file);
 
       if (pos.xq_piece_get(xq_square) != XQ_OFFBOARD) {
-        if (file == 0) os << (11 - rank) << "  ";
+        if (file == 1) os << " " << (11 - rank) << "  ";
         os << PIECE_TO_CHAR[pos.xq_piece_get(xq_square)] << " ";
       }
     }
@@ -84,10 +84,9 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
     if (rank < 13) os << '\n';
   }
   
-  /*
-  boardString += '   a b c d e f g h i\n\n'
-  boardString += '   side:           ' + ((side == RED) ? 'r' : 'b') + '\n';
-  boardString += '   sixty:          ' + sixty + '\n';
+  os << "    a b c d e f g h i\n\n";
+  os << "    side:           " << pos.side_to_move();//((pos.side_to_move() == (Color)XQ_RED) ? 'r' : 'b') << '\n';
+  /*boardString += '   sixty:          ' + sixty + '\n';
   boardString += '   hash key:      ' + hashKey + '\n';
   boardString += '   king squares:  [' + COORDINATES[kingSquare[RED]] + ', ' +
                                          COORDINATES[kingSquare[BLACK]] + ']\n'
@@ -156,6 +155,7 @@ void Position::init() {
   assert(count == 3668);
 }
 
+
 /*****************************\
  =============================
 
@@ -165,6 +165,25 @@ void Position::init() {
 \*****************************/
   
 Position& Position::xq_set(const string& fenStr/*, StateInfo* si, Thread* th*/) {
+  // array to convert board square indices to coordinates
+  const char OFFBOARD_MAP[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  };
+  
+  // array to convert ascii characters to piece code
   XQPiece CHAR_TO_PIECE[123] = {};
   CHAR_TO_PIECE['P'] = XQ_RED_PAWN;
   CHAR_TO_PIECE['A'] = XQ_RED_ADVISOR;
@@ -187,13 +206,17 @@ Position& Position::xq_set(const string& fenStr/*, StateInfo* si, Thread* th*/) 
   
   unsigned char xq_token;
   std::istringstream xq_ss(fenStr);
-  //std::memset(this, 0, sizeof(Position));
-
   xq_ss >> std::noskipws;
   xq_ss >> xq_token;
   
   // reset xiangqi board
-  std::fill_n(&xq_board[0], sizeof(xq_board) / sizeof(XQSquare), XQ_EMPTY);
+  for (int rank = 0; rank < 14; rank++) {
+    for (int file = 0; file < 11; file++) {
+      int xq_square = (XQSquare)(rank * 11 + file);
+      if (OFFBOARD_MAP[xq_square] != 1) xq_board[xq_square] = XQ_EMPTY;
+      else xq_board[xq_square] = XQ_OFFBOARD;
+    }
+  }
   
   for (int rank = 0; rank < 14; rank++) {
     for (int file = 0; file < 11; file++) {

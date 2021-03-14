@@ -30,6 +30,26 @@
 
 using namespace Stockfish;
 
+
+#include "movegen.h"
+void debug() {
+  Position pos;
+  // r1ba1a3/4kn3/2n1b4/pNp1p1p1p/4c4/6P2/P1P2R2P/1CcC5/9/2BAKAB2 w - - 0 1
+  pos.xq_set(XQ_START_FEN);
+  
+  // print board
+  std::cout << pos << std::endl;
+  
+
+  
+  //MoveList<LEGAL>(pos);
+  //Search::xq_perft(pos);
+  
+  //Threads.start_thinking(pos, states, limits, ponderMode);
+  
+  return;
+}
+
 int main(int argc, char* argv[]) {
 
   std::cout << engine_info() << std::endl;
@@ -46,6 +66,9 @@ int main(int argc, char* argv[]) {
   Search::clear(); // After threads are up
   Eval::NNUE::init();
 
+  // debug
+  debug();
+  
   UCI::loop(argc, argv);
 
   Threads.set(0);
