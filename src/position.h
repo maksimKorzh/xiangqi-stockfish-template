@@ -81,6 +81,9 @@ public:
   Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
   Position& set(const std::string& code, Color c, StateInfo* si);
   const std::string fen() const;
+  
+  // Array based xiangqi position representation
+  //int board;
 
   // Position representation
   Bitboard pieces() const;

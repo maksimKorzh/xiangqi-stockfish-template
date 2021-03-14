@@ -92,6 +92,14 @@ PieceType min_attacker<KING>(const Bitboard*, Square, Bitboard, Bitboard&, Bitbo
 
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
 
+  /*****************************\
+   =============================
+   
+        PRINT XIANGQI BOARD
+          
+   =============================
+  \*****************************/
+
   os << "\n +---+---+---+---+---+---+---+---+\n";
 
   for (Rank r = RANK_8; r >= RANK_1; --r)
@@ -121,6 +129,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
       os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
          << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
   }
+  
+  //os << "print board\n" << XQ_PIECE_TYPE[2];
 
   return os;
 }

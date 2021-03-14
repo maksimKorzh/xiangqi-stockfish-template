@@ -48,7 +48,7 @@
 // Disable some silly and noisy warning from MSVC compiler
 #pragma warning(disable: 4127) // Conditional expression is constant
 #pragma warning(disable: 4146) // Unary minus operator applied to unsigned type
-#pragma warning(disable: 4800) // Forcing value to bool 'true' or 'false'
+#pragma warning(disable: 4800) // Forcing value to bool 'true' or "false'
 #endif
 
 /// Predefined macros hell:
@@ -453,5 +453,102 @@ constexpr Move make(Square from, Square to, PieceType pt = KNIGHT) {
 constexpr bool is_ok(Move m) {
   return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
 }
+
+
+/*****************************\
+ =============================
+ 
+         XIANGQI TYPES
+        
+ =============================
+\*****************************/
+
+// starting position
+#define XQ_START_FEN "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1";
+
+// sides to move
+enum XQColor: int { XQ_RED, XQ_BLACK, XQ_NO_COLOR };
+
+// piece encoding
+enum XQPiece: int {
+  XQ_EMPTY,
+  
+  XQ_RED_PAWN,
+  XQ_RED_ADVISOR,
+  XQ_RED_BISHOP,
+  XQ_RED_KNIGHT,
+  XQ_RED_CANNON,
+  XQ_RED_ROOK,
+  XQ_RED_KING,
+  
+  XQ_BLACK_PAWN,
+  XQ_BLACK_ADVISOR,
+  XQ_BLACK_BISHOP,
+  XQ_BLACK_KNIGHT,
+  XQ_BLACK_CANNON,
+  XQ_BLACK_ROOK,
+  XQ_BLACK_KING,
+  
+  XQ_OFFBOARD
+};
+
+// piece types
+enum XQPieceType: int {
+  XQ_PAWN,
+  XQ_ADVISOR,
+  XQ_BISHOP,
+  XQ_KNIGHT,
+  XQ_CANNON,
+  XQ_ROOK,
+  XQ_KING
+};
+
+// map type to piece
+const int XQ_PIECE_TYPE[] = {
+  0, 
+  XQ_PAWN, XQ_ADVISOR, XQ_BISHOP, XQ_KNIGHT, XQ_CANNON, XQ_ROOK, XQ_KING,
+  XQ_PAWN, XQ_ADVISOR, XQ_BISHOP, XQ_KNIGHT, XQ_CANNON, XQ_ROOK, XQ_KING,
+};
+
+// map color to piece
+const int XQ_PIECE_COLOR[] = {
+  XQ_NO_COLOR,
+  XQ_RED, XQ_RED, XQ_RED, XQ_RED, XQ_RED, XQ_RED, XQ_RED,
+  XQ_BLACK, XQ_BLACK, XQ_BLACK, XQ_BLACK, XQ_BLACK, XQ_BLACK, XQ_BLACK
+};
+
+// square encoding
+enum XQSquare: int {
+  XQ_A9 = 23,  XQ_B9 = 24,  XQ_C9 = 25,  XQ_D9 = 26,  XQ_E9 = 27,  XQ_F9 = 28,  XQ_G9 = 29,  XQ_H9 = 30,  XQ_I9 = 31,
+  XQ_A8 = 34,  XQ_B8 = 35,  XQ_C8 = 36,  XQ_D8 = 37,  XQ_E8 = 38,  XQ_F8 = 39,  XQ_G8 = 40,  XQ_H8 = 41,  XQ_I8 = 42,
+  XQ_A7 = 45,  XQ_B7 = 46,  XQ_C7 = 47,  XQ_D7 = 48,  XQ_E7 = 49,  XQ_F7 = 50,  XQ_G7 = 51,  XQ_H7 = 52,  XQ_I7 = 53,
+  XQ_A6 = 56,  XQ_B6 = 57,  XQ_C6 = 58,  XQ_D6 = 59,  XQ_E6 = 60,  XQ_F6 = 61,  XQ_G6 = 62,  XQ_H6 = 63,  XQ_I6 = 64,
+  XQ_A5 = 67,  XQ_B5 = 68,  XQ_C5 = 69,  XQ_D5 = 70,  XQ_E5 = 71,  XQ_F5 = 72,  XQ_G5 = 73,  XQ_H5 = 74,  XQ_I5 = 75,
+  XQ_A4 = 78,  XQ_B4 = 79,  XQ_C4 = 80,  XQ_D4 = 81,  XQ_E4 = 82,  XQ_F4 = 83,  XQ_G4 = 84,  XQ_H4 = 85,  XQ_I4 = 86,
+  XQ_A3 = 89,  XQ_B3 = 90,  XQ_C3 = 91,  XQ_D3 = 92,  XQ_E3 = 93,  XQ_F3 = 94,  XQ_G3 = 95,  XQ_H3 = 96,  XQ_I3 = 97,
+  XQ_A2 = 100, XQ_B2 = 101, XQ_C2 = 102, XQ_D2 = 103, XQ_E2 = 104, XQ_F2 = 105, XQ_G2 = 106, XQ_H2 = 107, XQ_I2 = 108,
+  XQ_A1 = 111, XQ_B1 = 112, XQ_C1 = 113, XQ_D1 = 114, XQ_E1 = 115, XQ_F1 = 116, XQ_G1 = 117, XQ_H1 = 118, XQ_I1 = 119,
+  XQ_A0 = 122, XQ_B0 = 123, XQ_C0 = 124, XQ_D0 = 125, XQ_E0 = 126, XQ_F0 = 127, XQ_G0 = 128, XQ_H0 = 129, XQ_I0 = 130
+};
+  
+// array to convert board square indices to coordinates
+/*const char *XQ_BOARD_SQUARES[] = {
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+  "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx", 
+  "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
+  "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
+  "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
+  "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
+  "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
+  "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
+  "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
+  "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
+  "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx", 
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
+};*/
+
+
 
 #endif // #ifndef TYPES_H_INCLUDED
