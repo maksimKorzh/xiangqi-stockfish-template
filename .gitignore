@@ -1,32 +1,12 @@
-# Prerequisites
-*.d
+# Files from build
+**/*.o
+**/*.s
+src/.depend
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Built binary
+src/stockfish*
+src/-lstdc++.res
 
-# Precompiled Headers
-*.gch
-*.pch
+# Neural network for the NNUE evaluation
+**/*.nnue
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
