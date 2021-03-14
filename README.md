@@ -1,2 +1,3 @@
 # xiangqi-stockfish
-Chinese chess xiangqi engines fork of stockfish
+Chinese chess xiangqi engine fork of stockfish
+(under development)
