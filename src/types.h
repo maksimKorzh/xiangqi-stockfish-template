@@ -530,7 +530,8 @@ enum XQSquare: int {
   XQ_A1 = 111, XQ_B1 = 112, XQ_C1 = 113, XQ_D1 = 114, XQ_E1 = 115, XQ_F1 = 116, XQ_G1 = 117, XQ_H1 = 118, XQ_I1 = 119,
   XQ_A0 = 122, XQ_B0 = 123, XQ_C0 = 124, XQ_D0 = 125, XQ_E0 = 126, XQ_F0 = 127, XQ_G0 = 128, XQ_H0 = 129, XQ_I0 = 130
 };
-  
+
+//
 // array to convert board square indices to coordinates
 /*const char *XQ_BOARD_SQUARES[] = {
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
