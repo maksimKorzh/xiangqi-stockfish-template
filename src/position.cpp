@@ -56,14 +56,39 @@ constexpr Piece Pieces[] = { W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING
 /// operator<<(Position) returns an ASCII representation of the position
 
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
+  
+  /*os << "\n +---+---+---+---+---+---+---+---+\n";
 
-  /*****************************\
-   =============================
-   
-        PRINT XIANGQI BOARD
-          
-   =============================
-  \*****************************/
+  for (Rank r = RANK_8; r >= RANK_1; --r)
+  {
+      for (File f = FILE_A; f <= FILE_H; ++f)
+          os << " | " << PieceToChar[pos.piece_on(make_square(f, r))];
+
+      os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
+  }
+
+  os << "   a   b   c   d   e   f   g   h\n"
+     << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
+     << std::setfill('0') << std::setw(16) << pos.key()
+     << std::setfill(' ') << std::dec << "\nCheckers: ";
+
+  for (Bitboard b = pos.checkers(); b; )
+      os << UCI::square(pop_lsb(&b)) << " ";
+
+  if (    int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
+      && !pos.can_castle(ANY_CASTLING))
+  {
+      StateInfo st;
+      ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
+
+      Position p;
+      p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
+      Tablebases::ProbeState s1, s2;
+      Tablebases::WDLScore wdl = Tablebases::probe_wdl(p, &s1);
+      int dtz = Tablebases::probe_dtz(p, &s2);
+      os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
+         << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
+  }*/
   
   // ascii character piece representation
   const char *PIECE_TO_CHAR[] = {
@@ -85,14 +110,13 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
   }
   
   os << "    a b c d e f g h i\n\n";
-  os << "    side:           " << pos.side_to_move();//((pos.side_to_move() == (Color)XQ_RED) ? 'r' : 'b') << '\n';
-  /*boardString += '   sixty:          ' + sixty + '\n';
+  /*os << "    side:           " << pos.side_to_move();//((pos.side_to_move() == (Color)XQ_RED) ? 'r' : 'b') << '\n';
+  boardString += '   sixty:          ' + sixty + '\n';
   boardString += '   hash key:      ' + hashKey + '\n';
   boardString += '   king squares:  [' + COORDINATES[kingSquare[RED]] + ', ' +
                                          COORDINATES[kingSquare[BLACK]] + ']\n'
-  
+  */
   os << "print board\n";
-*/
 
   return os;
 }
@@ -781,7 +805,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(is_ok(m));
   assert(&newSt != st);
 
-  thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
+  //thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
   Key k = st->key ^ Zobrist::side;
 
   // Copy some fields of the old state to our new StateInfo object except the

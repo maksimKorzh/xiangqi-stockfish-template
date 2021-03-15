@@ -161,7 +161,7 @@ namespace {
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
-  /*template<bool Root>
+  template<bool Root>
   uint64_t perft(Position& pos, Depth depth) {
 
     StateInfo st;
@@ -185,18 +185,7 @@ namespace {
             sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
     }
     return nodes;
-  }*/
-  
-  template<bool Root>
-  uint64_t perft(Position& pos, Depth depth) {
-    uint64_t nodes = 0;
-    
-    generate<LEGAL>(pos, 0);
-    //const auto& m = MoveList<LEGAL>(pos);
-    
-    
-    return nodes;
-  } 
+  }
 
 } // namespace
 

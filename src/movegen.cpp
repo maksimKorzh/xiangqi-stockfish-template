@@ -344,9 +344,8 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
-  std::cout << "generate moves" << moveList << "\n";
   
-  /*Color us = pos.side_to_move();
+  Color us = pos.side_to_move();
   Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
   Square ksq = pos.square<KING>(us);
   ExtMove* cur = moveList;
@@ -360,7 +359,7 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
           *cur = (--moveList)->move;
       else
           ++cur;
-  */
+
   return moveList;
 }
 

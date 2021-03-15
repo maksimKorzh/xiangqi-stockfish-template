@@ -86,6 +86,7 @@ public:
   Position& operator=(const Position&) = delete;
 
   // Xiangqi FEN
+  Position& printBoard(Position& pos);
   Position& xq_set(const std::string& fenStr/*, StateInfo* si, Thread* th*/);
 
   // FEN string input/output
