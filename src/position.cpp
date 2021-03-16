@@ -56,8 +56,8 @@ constexpr Piece Pieces[] = { W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING
 /// operator<<(Position) returns an ASCII representation of the position
 
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
-  
-  /*os << "\n +---+---+---+---+---+---+---+---+\n";
+
+  os << "\n +---+---+---+---+---+---+---+---+\n";
 
   for (Rank r = RANK_8; r >= RANK_1; --r)
   {
@@ -88,35 +88,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
       int dtz = Tablebases::probe_dtz(p, &s2);
       os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
          << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
-  }*/
-  
-  // ascii character piece representation
-  const char *PIECE_TO_CHAR[] = {
-    ".", "P", "A", "B", "N", "C", "R", "K", "p", "a", "b", "n", "c", "r", "k", " "
-  };
-    
-  // print board position
-  for (int rank = 0; rank < 14; rank++) {
-    for (int file = 0; file < 11; file++) {
-      XQSquare xq_square = (XQSquare)(rank * 11 + file);
-
-      if (pos.xq_piece_get(xq_square) != XQ_OFFBOARD) {
-        if (file == 1) os << " " << (11 - rank) << "  ";
-        os << PIECE_TO_CHAR[pos.xq_piece_get(xq_square)] << " ";
-      }
-    }
-    
-    if (rank < 13) os << '\n';
   }
-  
-  os << "    a b c d e f g h i\n\n";
-  /*os << "    side:           " << pos.side_to_move();//((pos.side_to_move() == (Color)XQ_RED) ? 'r' : 'b') << '\n';
-  boardString += '   sixty:          ' + sixty + '\n';
-  boardString += '   hash key:      ' + hashKey + '\n';
-  boardString += '   king squares:  [' + COORDINATES[kingSquare[RED]] + ', ' +
-                                         COORDINATES[kingSquare[BLACK]] + ']\n'
-  */
-  os << "print board\n";
 
   return os;
 }
@@ -179,98 +151,6 @@ void Position::init() {
   assert(count == 3668);
 }
 
-
-/*****************************\
- =============================
-
-       SET XIANGQI FEN
-      
- =============================
-\*****************************/
-  
-Position& Position::xq_set(const string& fenStr/*, StateInfo* si, Thread* th*/) {
-  // array to convert board square indices to coordinates
-  const char OFFBOARD_MAP[] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  };
-  
-  // array to convert ascii characters to piece code
-  XQPiece CHAR_TO_PIECE[123] = {};
-  CHAR_TO_PIECE['P'] = XQ_RED_PAWN;
-  CHAR_TO_PIECE['A'] = XQ_RED_ADVISOR;
-  CHAR_TO_PIECE['B'] = XQ_RED_BISHOP;
-  CHAR_TO_PIECE['E'] = XQ_RED_BISHOP;
-  CHAR_TO_PIECE['N'] = XQ_RED_KNIGHT;
-  CHAR_TO_PIECE['H'] = XQ_RED_BISHOP;
-  CHAR_TO_PIECE['C'] = XQ_RED_CANNON;
-  CHAR_TO_PIECE['R'] = XQ_RED_ROOK;
-  CHAR_TO_PIECE['K'] = XQ_RED_KING;
-  CHAR_TO_PIECE['p'] = XQ_BLACK_PAWN;
-  CHAR_TO_PIECE['a'] = XQ_BLACK_ADVISOR;
-  CHAR_TO_PIECE['b'] = XQ_BLACK_BISHOP;
-  CHAR_TO_PIECE['e'] = XQ_BLACK_BISHOP;
-  CHAR_TO_PIECE['n'] = XQ_BLACK_KNIGHT;
-  CHAR_TO_PIECE['h'] = XQ_BLACK_KNIGHT;
-  CHAR_TO_PIECE['c'] = XQ_BLACK_CANNON;
-  CHAR_TO_PIECE['r'] = XQ_BLACK_ROOK;
-  CHAR_TO_PIECE['k'] = XQ_BLACK_KING;
-  
-  unsigned char xq_token;
-  std::istringstream xq_ss(fenStr);
-  xq_ss >> std::noskipws;
-  xq_ss >> xq_token;
-  
-  // reset xiangqi board
-  for (int rank = 0; rank < 14; rank++) {
-    for (int file = 0; file < 11; file++) {
-      int xq_square = (XQSquare)(rank * 11 + file);
-      if (OFFBOARD_MAP[xq_square] != 1) xq_board[xq_square] = XQ_EMPTY;
-      else xq_board[xq_square] = XQ_OFFBOARD;
-    }
-  }
-  
-  for (int rank = 0; rank < 14; rank++) {
-    for (int file = 0; file < 11; file++) {
-      XQSquare xq_square = (XQSquare)(rank * 11 + file);
-      
-      if (xq_board[xq_square] != XQ_OFFBOARD) {
-        // parse pieces
-        if ((xq_token >= 'a' && xq_token <= 'z') || (xq_token >= 'A' && xq_token <= 'Z')) {
-          if (xq_token == 'K') xq_king_square[XQ_RED] = xq_square;
-          else if (xq_token == 'k') xq_king_square[XQ_BLACK] = xq_square;
-          xq_board[xq_square] = CHAR_TO_PIECE[xq_token];
-          xq_ss >> xq_token;
-        }
-        
-        // parse empty squares
-        if (xq_token >= '0' && xq_token <= '9') {
-          int offset = xq_token - '0';
-          if (xq_board[xq_square] == XQ_EMPTY) file--;
-          file += offset;
-          xq_ss >> xq_token;
-        }
-        
-        // parse end of rank
-        if (xq_token == '/') xq_ss >> xq_token;;
-      }
-    }
-  }
-
-  return *this;
-}
 
 /// Position::set() initializes the position object with the given FEN string.
 /// This function is not very robust - make sure that input FENs are correct,
@@ -805,7 +685,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(is_ok(m));
   assert(&newSt != st);
 
-  //thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
+  thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
   Key k = st->key ^ Zobrist::side;
 
   // Copy some fields of the old state to our new StateInfo object except the

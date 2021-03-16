@@ -30,54 +30,6 @@
 
 using namespace Stockfish;
 
-
-#include "movegen.h"
-void perft(Position& pos, Depth depth) {
-
-    StateInfo st;
-    ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
-
-    uint64_t cnt, nodes = 0;
-    const bool leaf = (depth == 2);
-
-    for (const auto& m : MoveList<LEGAL>(pos))
-    {
-        if (depth <= 1)
-            {}//cnt = 1, nodes++;
-        else
-        {
-            pos.do_move(m, st);
-            //cnt = leaf ? MoveList<LEGAL>(pos).size() : perft(pos, depth - 1);
-            nodes += cnt;
-            pos.undo_move(m);
-        }
-
-        sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
-    }
-    return;
-  }
-
-void debug() {
-  Position pos;
-  StateListPtr states(new std::deque<StateInfo>(1));
-
-  pos.set("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", false, &states->back(), Threads.main());
-  
-  /* loop over moves
-  for (const auto& m : MoveList<LEGAL>(pos))
-  {
-    sync_cout << UCI::move(m, pos.is_chess960()) << sync_endl;
-  }*/
-  
-  perft(pos, (Depth)1);
-  
-  pos.xq_set(XQ_START_FEN);
-  std::cout << pos << std::endl;
-  
-  
-  return;
-}
-
 int main(int argc, char* argv[]) {
 
   std::cout << engine_info() << std::endl;
@@ -94,10 +46,7 @@ int main(int argc, char* argv[]) {
   Search::clear(); // After threads are up
   Eval::NNUE::init();
 
-  // debug
-  debug();
-  
-  //UCI::loop(argc, argv);
+  UCI::loop(argc, argv);
 
   Threads.set(0);
   return 0;

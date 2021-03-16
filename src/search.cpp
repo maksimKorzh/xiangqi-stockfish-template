@@ -562,6 +562,7 @@ void Thread::search() {
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
 
+
 namespace {
 
   // search<>() is the main search function for both PV and non-PV nodes

@@ -85,10 +85,6 @@ public:
   Position(const Position&) = delete;
   Position& operator=(const Position&) = delete;
 
-  // Xiangqi FEN
-  Position& printBoard(Position& pos);
-  Position& xq_set(const std::string& fenStr/*, StateInfo* si, Thread* th*/);
-
   // FEN string input/output
   Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
   Position& set(const std::string& code, Color c, StateInfo* si);
@@ -176,20 +172,6 @@ public:
 
   // Used by NNUE
   StateInfo* state() const;
-  
-  /*****************************\
-   =============================
-   
-       XIANGQI BOARD METHODS
-          
-   =============================
-  \*****************************/
-  
-  // get piece
-  XQPiece xq_piece_get(XQSquare xq_square) const;
-
-  // set piece
-  //void xq_piece_set(XQPiece p, XQSquare s);
 
 private:
   // Initialization helpers (used while setting up a position)
@@ -218,44 +200,6 @@ private:
   Thread* thisThread;
   StateInfo* st;
   bool chess960;
-  
-  
-  /*****************************\
-   =============================
-   
-           XIANGQI BOARD
-          
-   =============================
-  \*****************************/
-  
-  /*
-      PABNCRK      pabncrk
-      兵仕相傌炮俥帥  卒士象馬炮車將
-      
-      Board representation
-        (11 x 14 Mailbox)
-      
-      x x x x x x x x x x x
-      x x x x x x x x x x x
-      x r n b a k a b n r x
-      x . . . . . . . . . x
-      x . c . . . . . c . x
-      x p . p . p . p . p x
-      x . . . . . . . . . x
-      x . . . . . . . . . x
-      x P . P . P . P . P x
-      x . C . . . . . C . x
-      x . . . . . . . . . x
-      x R N B A K A B N R x
-      x x x x x x x x x x x
-      x x x x x x x x x x x
-  */
-  
-  // xiangqi board
-  XQPiece xq_board[XQ_SQUARE_NUMBER];
-      
-  // squares occupied by kings
-  XQSquare xq_king_square[2];
 };
 
 extern std::ostream& operator<<(std::ostream& os, const Position& pos);
@@ -440,35 +384,35 @@ inline Thread* Position::this_thread() const {
 inline void Position::put_piece(Piece pc, Square s) {
 
   board[s] = pc;
-  byTypeBB[ALL_PIECES] |= byTypeBB[type_of(pc)] |= s;
+  /*byTypeBB[ALL_PIECES] |= byTypeBB[type_of(pc)] |= s;
   byColorBB[color_of(pc)] |= s;
   pieceCount[pc]++;
   pieceCount[make_piece(color_of(pc), ALL_PIECES)]++;
-  psq += PSQT::psq[pc][s];
+  psq += PSQT::psq[pc][s];*/
 }
 
 inline void Position::remove_piece(Square s) {
 
-  Piece pc = board[s];
+  /*Piece pc = board[s];
   byTypeBB[ALL_PIECES] ^= s;
   byTypeBB[type_of(pc)] ^= s;
-  byColorBB[color_of(pc)] ^= s;
-  /* board[s] = NO_PIECE;  Not needed, overwritten by the capturing one */
-  pieceCount[pc]--;
+  byColorBB[color_of(pc)] ^= s;*/
+  board[s] = NO_PIECE; // Not needed, overwritten by the capturing one
+  /*pieceCount[pc]--;
   pieceCount[make_piece(color_of(pc), ALL_PIECES)]--;
-  psq -= PSQT::psq[pc][s];
+  psq -= PSQT::psq[pc][s];*/
 }
 
 inline void Position::move_piece(Square from, Square to) {
 
   Piece pc = board[from];
-  Bitboard fromTo = from | to;
+  /*Bitboard fromTo = from | to;
   byTypeBB[ALL_PIECES] ^= fromTo;
   byTypeBB[type_of(pc)] ^= fromTo;
-  byColorBB[color_of(pc)] ^= fromTo;
+  byColorBB[color_of(pc)] ^= fromTo;*/
   board[from] = NO_PIECE;
   board[to] = pc;
-  psq += PSQT::psq[pc][to] - PSQT::psq[pc][from];
+  //psq += PSQT::psq[pc][to] - PSQT::psq[pc][from];
 }
 
 inline void Position::do_move(Move m, StateInfo& newSt) {
@@ -479,24 +423,6 @@ inline StateInfo* Position::state() const {
 
   return st;
 }
-
-/*****************************\
- =============================
- 
-    XIANGQI BOARD INTERFACE
-        
- =============================
-\*****************************/
-
-// get piece
-inline XQPiece Position::xq_piece_get(XQSquare xq_square) const {
-  return xq_board[xq_square];
-}
-
-/* set piece
-inline void Position::xq_piece_set(XQPiece p, XQSquare s) {
-  xq_board[s] = p;
-}*/
 
 } // namespace Stockfish
 
