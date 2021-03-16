@@ -163,15 +163,18 @@ namespace {
   // to the given depth are generated and counted, and the sum is returned.
   template<bool Root>
   uint64_t perft(Position& pos, Depth depth) {
-
+    printf("breakpoint RERFT 1\n");
+     
     StateInfo st;
     ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
 
     uint64_t cnt, nodes = 0;
     const bool leaf = (depth == 2);
 
+    printf("breakpoint RERFT 2\n");
+    
     for (const auto& m : MoveList<LEGAL>(pos))
-    {
+    {printf("breakpoint RERFT MOVELIST\n");
         if (Root && depth <= 1)
             cnt = 1, nodes++;
         else
@@ -216,6 +219,7 @@ void Search::clear() {
 /// command. It searches from the root position and outputs the "bestmove".
 
 void MainThread::search() {
+  printf("breakpoint SEARCH BEGIN\n");
 
   if (Limits.perft)
   {

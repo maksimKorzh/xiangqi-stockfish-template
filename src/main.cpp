@@ -31,20 +31,55 @@
 using namespace Stockfish;
 
 int main(int argc, char* argv[]) {
-
-  std::cout << engine_info() << std::endl;
-
+  printf("breakpoint 1\n");
+  
+  std::cout << engine_info() << std::endl; 
+  
+  printf("breakpoint 2\n");
+  
   CommandLine::init(argc, argv);
+  
+  printf("breakpoint 3\n");
+  
   UCI::init(Options);
+  
+  printf("breakpoint 4\n");
+  
   Tune::init();
-  PSQT::init();
-  Bitboards::init();
+  
+  printf("breakpoint 5\n");
+  
+  //PSQT::init();
+  
+  printf("breakpoint 6\n");
+  
+  //Bitboards::init();
+  
+  printf("breakpoint 7\n");
+  
   Position::init();
+  
+  printf("breakpoint 8\n");
+  
   Bitbases::init();
-  Endgames::init();
+  
+  printf("breakpoint 9\n"); 
+  
+  //Endgames::init();
+  
+  printf("breakpoint 10\n"); 
+  
   Threads.set(size_t(Options["Threads"]));
+  
+  printf("breakpoint 11\n");
+  
   Search::clear(); // After threads are up
+  
+  printf("breakpoint 12\n");
+  
   Eval::NNUE::init();
+  
+  printf("breakpoint 13\n");
 
   UCI::loop(argc, argv);
 

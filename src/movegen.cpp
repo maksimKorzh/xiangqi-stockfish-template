@@ -344,8 +344,8 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
-
-  Color us = pos.side_to_move();
+  printf("breakpoint GENERATE MOVES BEGIN\n");
+  /*Color us = pos.side_to_move();
   Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
   Square ksq = pos.square<KING>(us);
   ExtMove* cur = moveList;
@@ -358,7 +358,8 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
           *cur = (--moveList)->move;
       else
           ++cur;
-
+  */
+  printf("breakpoint GENERATE MOVES END\n");
   return moveList;
 }
 

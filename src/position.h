@@ -186,6 +186,28 @@ private:
   template<bool Do>
   void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
 
+  /*
+     
+    Board representation
+       (11x14 Mailbox)
+    
+    x x x x x x x x x x x
+    x x x x x x x x x x x
+    x r n b a k a b n r x
+    x . . . . . . . . . x
+    x . c . . . . . c . x
+    x p . p . p . p . p x
+    x . . . . . . . . . x
+    x . . . . . . . . . x
+    x P . P . P . P . P x
+    x . C . . . . . C . x
+    x . . . . . . . . . x
+    x R N B A K A B N R x
+    x x x x x x x x x x x
+    x x x x x x x x x x x
+        
+  */
+  
   // Data members
   Piece board[SQUARE_NB];
   Bitboard byTypeBB[PIECE_TYPE_NB];

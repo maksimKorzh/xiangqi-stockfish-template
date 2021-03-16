@@ -41,7 +41,7 @@ extern vector<string> setup_bench(const Position&, istream&);
 namespace {
 
   // FEN string of the initial position, normal chess
-  const char* StartFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  const char* StartFEN = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1";
 
 
   // position() is called when engine receives the "position" UCI command.
@@ -122,7 +122,6 @@ namespace {
   // the search.
 
   void go(Position& pos, istringstream& is, StateListPtr& states) {
-
     Search::LimitsType limits;
     string token;
     bool ponderMode = false;
@@ -229,7 +228,8 @@ namespace {
 /// In addition to the UCI ones, also some additional debug commands are supported.
 
 void UCI::loop(int argc, char* argv[]) {
-
+  printf("breakpoint UCI BEGIN\n");
+  
   Position pos;
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));

@@ -46,10 +46,29 @@ namespace Zobrist {
 
 namespace {
 
-const string PieceToChar(" PNBRQK  pnbrqk");
+// array to convert board square indices to coordinates
+const char *COORDINATES[] = {
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+  "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx", 
+  "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
+  "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
+  "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
+  "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
+  "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
+  "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
+  "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
+  "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
+  "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx", 
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
+};
 
-constexpr Piece Pieces[] = { W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
-                             B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING };
+const string PieceToChar(" PANBRCKpanbrckx");
+
+constexpr Piece Pieces[] = {
+  W_PAWN, W_ADVISOR, W_KNIGHT, W_BISHOP, W_ROOK, W_CANNON, W_KING,
+  B_PAWN, B_ADVISOR, B_KNIGHT, B_BISHOP, B_ROOK, B_CANNON, B_KING, };
 } // namespace
 
 
@@ -57,38 +76,43 @@ constexpr Piece Pieces[] = { W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING
 
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
 
-  os << "\n +---+---+---+---+---+---+---+---+\n";
+  os << "\n +---+---+---+---+---+---+---+---+---+\n";
 
-  for (Rank r = RANK_8; r >= RANK_1; --r)
+  for (Rank r = RANK_14; r >= RANK_1; --r)
   {
-      for (File f = FILE_A; f <= FILE_H; ++f)
-          os << " | " << PieceToChar[pos.piece_on(make_square(f, r))];
-
-      os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
+    for (File f = FILE_A; f <= FILE_K; ++f) {
+      Square s = (Square)(r * 11 + f  );
+      
+      if (pos.piece_on(s) != OFFBOARD)
+        os << " | " << PieceToChar[pos.piece_on(make_square(f, r))];
+    }
+    
+    if (r > (Rank)1 && r < (Rank)12)
+      os << " | " << (r - 2) << "\n +---+---+---+---+---+---+---+---+---+\n";
   }
 
-  os << "   a   b   c   d   e   f   g   h\n"
-     << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
-     << std::setfill('0') << std::setw(16) << pos.key()
-     << std::setfill(' ') << std::dec << "\nCheckers: ";
+  os << "   a   b   c   d   e   f   g   h   i\n";
+     //<< "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
+     //<< std::setfill('0') << std::setw(16) << pos.key();
+     //<< std::setfill(' ') << std::dec << "\nCheckers: ";
 
-  for (Bitboard b = pos.checkers(); b; )
-      os << UCI::square(pop_lsb(&b)) << " ";
+  //for (Bitboard b = pos.checkers(); b; )
+  //    os << UCI::square(pop_lsb(&b)) << " ";
 
-  if (    int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
+  /*if (    int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
       && !pos.can_castle(ANY_CASTLING))
   {
-      StateInfo st;
-      ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
+      //StateInfo st;
+      //ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
 
-      Position p;
-      p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
-      Tablebases::ProbeState s1, s2;
-      Tablebases::WDLScore wdl = Tablebases::probe_wdl(p, &s1);
-      int dtz = Tablebases::probe_dtz(p, &s2);
-      os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
-         << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
-  }
+      //Position p;
+      //p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
+      //Tablebases::ProbeState s1, s2;
+      //Tablebases::WDLScore wdl = Tablebases::probe_wdl(p, &s1);
+      //int dtz = Tablebases::probe_dtz(p, &s2);
+      //os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
+      //   << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
+  }*/
 
   return os;
 }
@@ -113,7 +137,7 @@ void Position::init() {
 
   PRNG rng(1070372);
 
-  for (Piece pc : Pieces)
+  /*for (Piece pc : Pieces)
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
           Zobrist::psq[pc][s] = rng.rand<Key>();
 
@@ -148,7 +172,7 @@ void Position::init() {
                   }
                   count++;
              }
-  assert(count == 3668);
+  assert(count == 3668);*/
 }
 
 
@@ -191,10 +215,30 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
    6) Fullmove number. The number of the full move. It starts at 1, and is
       incremented after Black's move.
 */
+  printf("breakpoint PARSE FEN BEGIN\n");
+  
+  // encode ascii pieces
+  Piece CHAR_TO_PIECE[123] = {};
+  CHAR_TO_PIECE['P'] = W_PAWN;
+  CHAR_TO_PIECE['A'] = W_ADVISOR;
+  CHAR_TO_PIECE['B'] = W_BISHOP;
+  CHAR_TO_PIECE['E'] = W_BISHOP;
+  CHAR_TO_PIECE['N'] = W_KNIGHT;
+  CHAR_TO_PIECE['H'] = W_BISHOP;
+  CHAR_TO_PIECE['C'] = W_CANNON;
+  CHAR_TO_PIECE['R'] = W_ROOK;
+  CHAR_TO_PIECE['K'] = W_KING;
+  CHAR_TO_PIECE['p'] = B_PAWN;
+  CHAR_TO_PIECE['a'] = B_ADVISOR;
+  CHAR_TO_PIECE['b'] = B_BISHOP;
+  CHAR_TO_PIECE['e'] = B_BISHOP;
+  CHAR_TO_PIECE['n'] = B_KNIGHT;
+  CHAR_TO_PIECE['h'] = B_KNIGHT;
+  CHAR_TO_PIECE['c'] = B_CANNON;
+  CHAR_TO_PIECE['r'] = B_ROOK;
+  CHAR_TO_PIECE['k'] = B_KING;
 
-  unsigned char col, row, token;
-  size_t idx;
-  Square sq = SQ_A8;
+  unsigned char token;
   std::istringstream ss(fenStr);
 
   std::memset(this, 0, sizeof(Position));
@@ -203,24 +247,47 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 
   ss >> std::noskipws;
 
-  // 1. Piece placement
-  while ((ss >> token) && !isspace(token))
+  // reset board array
+  for (Square s = SQ_A1; s < SQUARE_NB; ++s) {
+    if (string(COORDINATES[s]).compare("xx") != 0) put_piece(NO_PIECE, s);
+    else put_piece(OFFBOARD, s);
+  }
+
+  printf("breakpoint PARSE FEN reset pieces\n");
+  ss >> token;
+
+  
+  for (Rank r = RANK_14; r >= RANK_1; --r)
   {
-      if (isdigit(token))
-          sq += (token - '0') * EAST; // Advance the given number of files
+    for (File f = FILE_A; f <= FILE_K; ++f) {
+      Square s = make_square(f, r);
 
-      else if (token == '/')
-          sq += 2 * SOUTH;
-
-      else if ((idx = PieceToChar.find(token)) != string::npos) {
-          put_piece(Piece(idx), sq);
-          ++sq;
+      if (piece_on(s) != OFFBOARD) {
+        // 1. Piece placement
+        if ((token >= 'a' && token <= 'z') || (token >= 'A' && token <= 'Z')) {
+          //if (token == 'K') king_sq[WHITE] = square;
+          //else if (token == 'k') king_sq[BLACK] = square;
+          put_piece(CHAR_TO_PIECE[token], s);
+          ss >> token;
+        }
+        
+        // parse empty squares
+        if (token >= '0' && token <= '9') {
+          int offset = token - '0';
+          if (piece_on(s) == NO_PIECE) --f;
+          f = (File)(f + offset);
+          ss >> token;
+        }
+        
+        // parse end of rank
+        if (token == '/') ss >> token;
       }
+    }
   }
 
   // 2. Active color
   ss >> token;
-  sideToMove = (token == 'w' ? WHITE : BLACK);
+  sideToMove = (token == 'b' ? BLACK : WHITE);
   ss >> token;
 
   // 3. Castling availability. Compatible with 3 standards: Normal FEN standard,
@@ -251,9 +318,9 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
       set_castling_right(c, rsq);
   }
 
-  set_state(st);
-
-  // 4. En passant square.
+  //set_state(st);
+  
+  /* 4. En passant square.
   // Ignore if square is invalid or not on side to move relative rank 6.
   bool enpassant = false;
 
@@ -284,8 +351,11 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
       put_piece(make_piece(~sideToMove, PAWN), st->epSquare - pawn_push(sideToMove));
   }
   else
-      st->epSquare = SQ_NONE;
-
+      st->epSquare = SQ_NONE;*/
+  
+  // there's no enpassant in xiangqi
+  st->epSquare = SQ_NONE;
+  
   // 5-6. Halfmove clock and fullmove number
   ss >> std::skipws >> st->rule50 >> gamePly;
 
@@ -295,6 +365,7 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 
   chess960 = isChess960;
   thisThread = th;
+
   st->accumulator.state[WHITE] = Eval::NNUE::INIT;
   st->accumulator.state[BLACK] = Eval::NNUE::INIT;
 
@@ -353,11 +424,11 @@ void Position::set_state(StateInfo* si) const {
   si->key = si->materialKey = 0;
   si->pawnKey = Zobrist::noPawns;
   si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
-  si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
+  //si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
 
-  set_check_info(si);
+  //set_check_info(si);
 
-  for (Bitboard b = pieces(); b; )
+  /*for (Bitboard b = pieces(); b; )
   {
       Square s = pop_lsb(&b);
       Piece pc = piece_on(s);
@@ -368,9 +439,9 @@ void Position::set_state(StateInfo* si) const {
 
       else if (type_of(pc) != KING)
           si->nonPawnMaterial[color_of(pc)] += PieceValue[MG][pc];
-  }
+  }*/
 
-  if (si->epSquare != SQ_NONE)
+  /*if (si->epSquare != SQ_NONE)
       si->key ^= Zobrist::enpassant[file_of(si->epSquare)];
 
   if (sideToMove == BLACK)
@@ -380,7 +451,7 @@ void Position::set_state(StateInfo* si) const {
 
   for (Piece pc : Pieces)
       for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
-          si->materialKey ^= Zobrist::psq[pc][cnt];
+          si->materialKey ^= Zobrist::psq[pc][cnt];*/
 }
 
 
