@@ -46,20 +46,20 @@ namespace Zobrist {
 
 namespace {
 
-// array to convert board square indices to coordinates
+// offboard map
 const char *COORDINATES[] = {
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
-  "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx", 
-  "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
-  "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
-  "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
-  "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
-  "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
-  "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
-  "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
-  "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
-  "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
 };
@@ -92,6 +92,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
   }
 
   os << "   a   b   c   d   e   f   g   h   i\n";
+  os << "\nSide to move: " << (pos.side_to_move() == WHITE ? "r" : "b");
      //<< "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
      //<< std::setfill('0') << std::setw(16) << pos.key();
      //<< std::setfill(' ') << std::dec << "\nCheckers: ";

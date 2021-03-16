@@ -197,9 +197,11 @@ enum Value : int {
 };
 
 enum PieceType {
-  NO_PIECE_TYPE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING,
+  NO_PIECE_TYPE, PAWN, ADVISOR, KNIGHT, BISHOP, ROOK, CANNON, KING,
   ALL_PIECES = 0,
-  PIECE_TYPE_NB = 8
+  PIECE_TYPE_NB = 9,
+  
+  QUEEN // just a placeholder for now
 };
 
 enum Piece {
@@ -229,6 +231,82 @@ enum : int {
   DEPTH_OFFSET = -7 // value used only for TT entry occupancy check
 };
 
+// zones of xiangqi board
+const int BOARD_ZONES[2][154] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+// directions
+const int UP = 11;
+const int DOWN = -11;
+const int LEFT = -1;
+const int RIGHT = 1;
+
+// piece move offsets
+const int ORTHOGONALS[] = {LEFT, RIGHT, UP, DOWN};
+const int DIAGONALS[] = {UP + LEFT, UP + RIGHT, DOWN + LEFT, DOWN + RIGHT};
+
+// offsets to get attacks by pawns
+const int PAWN_ATTACK_OFFSETS[2][3] = {
+  DOWN, LEFT, RIGHT,
+  UP, LEFT, RIGHT
+};
+
+// offsets to get attacks by knights
+const int KNIGHT_ATTACK_OFFSETS[4][2] = {
+  UP + UP + LEFT, LEFT + LEFT + UP,
+  UP + UP + RIGHT, RIGHT + RIGHT + UP,
+  DOWN + DOWN + LEFT, LEFT + LEFT + DOWN,
+  RIGHT + RIGHT + DOWN, DOWN + DOWN + RIGHT
+};
+
+// offsets to get attacks by pawns
+const int PAWN_MOVE_OFFSETS[2][3] = {
+  UP, LEFT, RIGHT,
+  DOWN, LEFT, RIGHT
+};
+
+// offsets to get target squares for knights
+const int KNIGHT_MOVE_OFFSETS[4][2] = {
+  LEFT + LEFT + UP, LEFT + LEFT + DOWN,
+  RIGHT + RIGHT + UP, RIGHT + RIGHT + DOWN,
+  UP + UP + LEFT, UP + UP + RIGHT,
+  DOWN + DOWN + LEFT, DOWN + DOWN + RIGHT
+};
+
+// offsets to get target squares for bishops
+const int BISHOP_MOVE_OFFSETS[] = {
+  (UP + LEFT) * 2, (UP + RIGHT) * 2, (DOWN + LEFT) * 2, (DOWN + RIGHT) * 2
+};
+
 enum Square : int {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1, SQ_I1, SQ_J1, SQ_K1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2, SQ_I2, SQ_J2, SQ_K2,
@@ -249,6 +327,20 @@ enum Square : int {
 
   SQUARE_ZERO = 0,
   SQUARE_NB   = 154
+};
+
+// map type to piece
+const PieceType PIECE_TYPE[] = {
+  NO_PIECE_TYPE, 
+  PAWN, ADVISOR, BISHOP, KNIGHT, CANNON, ROOK, KING,
+  PAWN, ADVISOR, BISHOP, KNIGHT, CANNON, ROOK, KING
+};
+
+// map color to piece
+const Color PIECE_COLOR[] = {
+  COLOR_NB,
+  WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+  BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK
 };
 
 enum Direction : int {

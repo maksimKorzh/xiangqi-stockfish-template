@@ -113,11 +113,11 @@ Value Endgame<KXK>::operator()(const Position& pos) const {
                 + push_to_edge(weakKing)
                 + push_close(strongKing, weakKing);
 
-  if (   pos.count<QUEEN>(strongSide)
+  if (0/*   pos.count<QUEEN>(strongSide)
       || pos.count<ROOK>(strongSide)
       ||(pos.count<BISHOP>(strongSide) && pos.count<KNIGHT>(strongSide))
       || (   (pos.pieces(strongSide, BISHOP) & ~DarkSquares)
-          && (pos.pieces(strongSide, BISHOP) &  DarkSquares)))
+          && (pos.pieces(strongSide, BISHOP) &  DarkSquares))*/)
       result = std::min(result + VALUE_KNOWN_WIN, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
   return strongSide == pos.side_to_move() ? result : -result;
