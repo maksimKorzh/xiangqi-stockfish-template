@@ -341,24 +341,29 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 
 /// generate<LEGAL> generates all the legal moves in the given position
-// array to convert board square indices to coordinates
-const char *COORDINATES[] = {
-  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
-  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
-  "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx",
-  "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
-  "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
-  "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
-  "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
-  "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
-  "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
-  "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
-  "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
-  "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx",
-  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
-  "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
-}; 
 
+// push move into move list
+static ExtMove* pushMove(const Position& pos, ExtMove* moveList, Square sourceSquare, Square targetSquare, Piece sourcePiece, Piece targetPiece, bool onlyCaptures) {
+  if (targetPiece == NO_PIECE || PIECE_COLOR[targetPiece] == (pos.side_to_move() ^ 1)) {
+    Move move = MOVE_NONE;
+    
+    if (targetPiece) {
+      move = encodeMove(sourceSquare, targetSquare, sourcePiece, targetPiece, 1);
+    }
+    else {
+      if (onlyCaptures == 0) {
+        move = encodeMove(sourceSquare, targetSquare, sourcePiece, targetPiece, 0);
+      }
+    }
+
+    // push move into move list
+    if (move) *moveList++ = move;
+  }
+  
+  return moveList;
+}
+
+// generate pseudo legal moves
 static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyCaptures) {
   // loop over all board squares
   for (Square sourceSquare = SQ_A1; sourceSquare < SQUARE_NB; ++sourceSquare) {
@@ -369,8 +374,6 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
       Color pieceColor = PIECE_COLOR[piece];
       Color side = pos.side_to_move();
       
-      // rnbakabnr/9/1c5c1/p1p1p1p1p/2P6/9/P111P1P1P/1C5C1/9/RNBAKABNR w - - 0 1
-      
       if (pieceColor == side) {
         // pawns
         if (pieceType == PAWN) {
@@ -378,48 +381,49 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
             Square targetSquare = (Square)(sourceSquare + PAWN_MOVE_OFFSETS[side][direction]);
             Piece targetPiece = pos.piece_on(targetSquare);
             
-            if (targetPiece != OFFBOARD) {
-              printf("%s%s\n", COORDINATES[sourceSquare], COORDINATES[targetSquare]);
-              //pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
-            }
+            if (targetPiece != OFFBOARD)
+              moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
             
             if (BOARD_ZONES[side][sourceSquare]) break; 
           }
         }
         
-        /* kings & advisors
+        // kings & advisors
         if (pieceType == KING || pieceType == ADVISOR) {
-          for (let direction = 0; direction < ORTHOGONALS.length; direction++) {
-            let offsets = (pieceType == KING) ? ORTHOGONALS : DIAGONALS;
-            let targetSquare = sourceSquare + offsets[direction];
-            let targetPiece = board[targetSquare];
+          for (int direction = 0; direction < 4; direction++) {
+            const int *offsets = (pieceType == KING) ? ORTHOGONALS : DIAGONALS;
+            Square targetSquare = (Square)(sourceSquare + offsets[direction]);
+            Piece targetPiece = pos.piece_on(targetSquare);
             
-            if (BOARD_ZONES[side][targetSquare] == 2) pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
+            if (BOARD_ZONES[side][targetSquare] == 2)
+              moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
           }
         }
         
         // bishops
         if (pieceType == BISHOP) {
-          for (let direction = 0; direction < BISHOP_MOVE_OFFSETS.length; direction++) {
-            let targetSquare = sourceSquare + BISHOP_MOVE_OFFSETS[direction];
-            let jumpOver = sourceSquare + DIAGONALS[direction];
-            let targetPiece = board[targetSquare];
+          for (int direction = 0; direction < 4; direction++) {
+            Square targetSquare = (Square)(sourceSquare + BISHOP_MOVE_OFFSETS[direction]);
+            Square jumpOver = (Square)(sourceSquare + DIAGONALS[direction]);
+            Piece targetPiece = pos.piece_on(targetSquare);
             
-            if (BOARD_ZONES[side][targetSquare] && board[jumpOver] == EMPTY) pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
+            if (BOARD_ZONES[side][targetSquare] && pos.piece_on(jumpOver) == NO_PIECE)
+              moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
           }
         }
         
         // knights
         if (pieceType == KNIGHT) {
-          for (let direction = 0; direction < ORTHOGONALS.length; direction++) {
-            let targetDirection = sourceSquare + ORTHOGONALS[direction];
+          for (int direction = 0; direction < 4; direction++) {
+            Square targetDirection = (Square)(sourceSquare + ORTHOGONALS[direction]);
       
-            if (board[targetDirection] == EMPTY) {
-              for (let offset = 0; offset < 2; offset++) {
-                let targetSquare = sourceSquare + KNIGHT_MOVE_OFFSETS[direction][offset];
-                let targetPiece = board[targetSquare];
+            if (pos.piece_on(targetDirection) == NO_PIECE) {
+              for (int offset = 0; offset < 2; offset++) {
+                Square targetSquare = (Square)(sourceSquare + KNIGHT_MOVE_OFFSETS[direction][offset]);
+                Piece targetPiece = pos.piece_on(targetSquare);
                 
-                if (targetPiece != OFFBOARD) pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
+                if (targetPiece != OFFBOARD)
+                  moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
               }
             }
           }
@@ -427,34 +431,34 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
         
         // rooks & cannons
         if (pieceType == ROOK || pieceType == CANNON) {
-          for (let direction = 0; direction < ORTHOGONALS.length; direction++) {
-            let targetSquare = sourceSquare + ORTHOGONALS[direction];
-            let jumpOver = 0;
+          for (int direction = 0; direction < 4; direction++) {
+            Square targetSquare = (Square)(sourceSquare + ORTHOGONALS[direction]);
+            int jumpOver = 0;
             
-            while (board[targetSquare] != OFFBOARD) {
-              let targetPiece = board[targetSquare];
+            while (pos.piece_on(targetSquare) != OFFBOARD) {
+              Piece targetPiece = pos.piece_on(targetSquare);
               
               if (jumpOver == 0) {
                 // all rook moves
-                if (pieceType == ROOK && PIECE_COLOR[targetPiece] == side ^ 1)
-                  pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
+                if (pieceType == ROOK && (PIECE_COLOR[targetPiece] == (side ^ 1)))
+                  moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
                 
                 // quiet cannon moves
-                else if (pieceType == CANNON && targetPiece == EMPTY)
-                  pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
+                else if (pieceType == CANNON && targetPiece == NO_PIECE)
+                  moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
               }
 
               if (targetPiece) jumpOver++;
-              if (targetPiece && pieceType == CANNON && PIECE_COLOR[targetPiece] == side ^ 1 && jumpOver == 2) {
+              if (targetPiece && pieceType == CANNON && (PIECE_COLOR[targetPiece] == (side ^ 1)) && jumpOver == 2) {
                 // capture cannon moves
-                pushMove(moveList, sourceSquare, targetSquare, board[sourceSquare], targetPiece, onlyCaptures);
+                moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
                 break;
               }
 
-              targetSquare += ORTHOGONALS[direction];
+              targetSquare = (Square)(targetSquare + ORTHOGONALS[direction]);
             }
           }
-        }*/
+        }
       }
     }
   }
@@ -464,7 +468,9 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
 
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
-  generateMoves(pos, moveList, false);
+  printf("breakpoint GENERATE MOVES BEGIN\n");
+  ExtMove* firstMove = moveList;
+  moveList = generateMoves(pos, moveList, false);
   
   /*Color us = pos.side_to_move();
   Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
@@ -473,6 +479,7 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 
   moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)
                             : generate<NON_EVASIONS>(pos, moveList);
+  
   while (cur != moveList)
       if (  ((pinned && pinned & from_sq(*cur)) || from_sq(*cur) == ksq || type_of(*cur) == EN_PASSANT)
           && !pos.legal(*cur))
@@ -480,6 +487,16 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
       else
           ++cur;
   */
+  
+  while (firstMove != moveList) {
+    
+    //*firstMove = (--moveList)->move;
+    --moveList;
+    std::cout << moveList->move << "\n";
+  }
+  
+  std::cout << moveList->move << "\n";
+  
   printf("breakpoint GENERATE MOVES END\n");
   return moveList;
 }

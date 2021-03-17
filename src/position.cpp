@@ -64,7 +64,7 @@ const char *COORDINATES[] = {
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
 };
 
-const string PieceToChar(" PANBRCKpanbrckx");
+const string PieceToChar(" PABNCRKpabncrkx");
 
 constexpr Piece Pieces[] = {
   W_PAWN, W_ADVISOR, W_KNIGHT, W_BISHOP, W_ROOK, W_CANNON, W_KING,

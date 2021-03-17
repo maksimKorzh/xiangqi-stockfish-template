@@ -197,7 +197,7 @@ enum Value : int {
 };
 
 enum PieceType {
-  NO_PIECE_TYPE, PAWN, ADVISOR, KNIGHT, BISHOP, ROOK, CANNON, KING,
+  NO_PIECE_TYPE, PAWN, ADVISOR, BISHOP, KNIGHT, CANNON, ROOK, KING,
   ALL_PIECES = 0,
   PIECE_TYPE_NB = 9,
   
@@ -206,8 +206,8 @@ enum PieceType {
 
 enum Piece {
   NO_PIECE,
-  W_PAWN, W_ADVISOR, W_KNIGHT, W_BISHOP, W_ROOK, W_CANNON, W_KING,
-  B_PAWN, B_ADVISOR, B_KNIGHT, B_BISHOP, B_ROOK, B_CANNON, B_KING,
+  W_PAWN, W_ADVISOR, W_BISHOP, W_KNIGHT, W_CANNON, W_ROOK, W_KING,
+  B_PAWN, B_ADVISOR, B_BISHOP, B_KNIGHT, B_CANNON, B_ROOK, B_KING,
   OFFBOARD,
   PIECE_NB = 16
 };
@@ -436,6 +436,31 @@ ENABLE_BASE_OPERATORS_ON(Score)
 #undef ENABLE_FULL_OPERATORS_ON
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
+
+/*
+                           MOVE ENCODING
+
+    0000 0000 0000 0000 0000 1111 1111  source square  0xFF
+    0000 0000 0000 1111 1111 0000 0000  target square  0xFF00
+    0000 0000 1111 0000 0000 0000 0000   source piece  0xF0000
+    0000 1111 0000 0000 0000 0000 0000   target piece  0xF00000
+    0001 0000 0000 0000 0000 0000 0000   capture flag  0x1000000
+*/
+
+// store squares & pieces into a single number
+constexpr Move encodeMove(Square sourceSquare, Square targetSquare, Piece sourcePiece, Piece targetPiece, int captureFlag) {
+  return (Move)((sourceSquare) |
+         (targetSquare << 8) |
+         (sourcePiece << 16) |
+         (targetPiece << 20) |
+         (captureFlag << 24));
+}
+
+constexpr Square getSourceSquare(Move move) { return (Square)(move & 0xFF); }
+constexpr Square getTargetSquare(Move move) { return (Square)((move >> 8) & 0xFF); }
+constexpr Piece getSourcePiece(Move move) { return (Piece)((move >> 16) & 0xF); }
+constexpr Piece getTargetPiece(Move move) { return (Piece)((move >> 20) & 0xF); }
+constexpr int getCaptureFlag(Move move) { return (int)((move >> 24) & 0x1); }
 
 /// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }

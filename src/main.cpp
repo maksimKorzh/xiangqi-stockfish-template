@@ -30,6 +30,8 @@
 
 using namespace Stockfish;
 
+// rnbakabnr/9/1c5c1/p1p1p1p1p/2P6/9/P111P1P1P/1C5C1/9/RNBAKABNR w - - 0 1
+
 int main(int argc, char* argv[]) {
   printf("breakpoint 1\n");
   

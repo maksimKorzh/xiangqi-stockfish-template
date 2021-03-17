@@ -335,23 +335,34 @@ std::string UCI::square(Square s) {
 /// castling moves are always encoded as 'king captures rook'.
 
 string UCI::move(Move m, bool chess960) {
+  // avoid "unused variable" warning
+  if (chess960) {};
+  
+  // array to convert board square indices to coordinates
+  const char *COORDINATES[] = {
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+    "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx",
+    "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
+    "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
+    "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
+    "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
+    "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
+    "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
+    "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
+    "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
+    "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx",
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
+  }; 
 
-  Square from = from_sq(m);
-  Square to = to_sq(m);
+  Square from = getSourceSquare(m);
+  Square to = getTargetSquare(m);
 
   if (m == MOVE_NONE)
       return "(none)";
 
-  if (m == MOVE_NULL)
-      return "0000";
-
-  if (type_of(m) == CASTLING && !chess960)
-      to = make_square(to > from ? FILE_G : FILE_C, rank_of(from));
-
-  string move = UCI::square(from) + UCI::square(to);
-
-  if (type_of(m) == PROMOTION)
-      move += " pnbrqk"[promotion_type(m)];
+  string move = (string)COORDINATES[from] + (string)COORDINATES[to];
 
   return move;
 }

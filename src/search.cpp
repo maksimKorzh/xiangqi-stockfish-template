@@ -170,12 +170,10 @@ namespace {
 
     uint64_t cnt, nodes = 0;
     const bool leaf = (depth == 2);
-
-    printf("breakpoint RERFT 2\n");
     
     for (const auto& m : MoveList<LEGAL>(pos))
     {printf("breakpoint RERFT MOVELIST\n");
-        if (Root && depth <= 1)
+        /*if (Root && depth <= 1)
             cnt = 1, nodes++;
         else
         {
@@ -186,6 +184,8 @@ namespace {
         }
         if (Root)
             sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
+        */
+        sync_cout << UCI::move(m, pos.is_chess960());
     }
     return nodes;
   }
