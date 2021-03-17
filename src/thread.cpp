@@ -170,7 +170,7 @@ void ThreadPool::clear() {
 void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
                                 const Search::LimitsType& limits, bool ponderMode) {
 
-  main()->wait_for_search_finished();
+  main()->wait_for_search_finished(); 
 
   main()->stopOnPonderhit = stop = false;
   increaseDepth = true;
@@ -178,10 +178,11 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   Search::Limits = limits;
   Search::RootMoves rootMoves;
 
-  for (const auto& m : MoveList<LEGAL>(pos))
+  // seems like creates a list of root moves
+  /*for (const auto& m : MoveList<LEGAL>(pos))
       if (   limits.searchmoves.empty()
           || std::count(limits.searchmoves.begin(), limits.searchmoves.end(), m))
-          rootMoves.emplace_back(m);
+          rootMoves.emplace_back(m);*/
 
   if (!rootMoves.empty())
       Tablebases::rank_root_moves(pos, rootMoves);

@@ -341,6 +341,23 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 
 /// generate<LEGAL> generates all the legal moves in the given position
+// array to convert board square indices to coordinates
+  const char *COORDINATES[] = {
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+    "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx",
+    "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
+    "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
+    "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
+    "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
+    "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
+    "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
+    "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
+    "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
+    "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx",
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
+    "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
+  }; 
 
 // push move into move list
 static ExtMove* pushMove(const Position& pos, ExtMove* moveList, Square sourceSquare, Square targetSquare, Piece sourcePiece, Piece targetPiece, bool onlyCaptures) {
@@ -348,10 +365,12 @@ static ExtMove* pushMove(const Position& pos, ExtMove* moveList, Square sourceSq
     Move move = MOVE_NONE;
     
     if (targetPiece) {
+      printf("%s%s\n", COORDINATES[sourceSquare], COORDINATES[targetSquare]);
       move = encodeMove(sourceSquare, targetSquare, sourcePiece, targetPiece, 1);
     }
     else {
       if (onlyCaptures == 0) {
+        printf("%s%s\n", COORDINATES[sourceSquare], COORDINATES[targetSquare]);
         move = encodeMove(sourceSquare, targetSquare, sourcePiece, targetPiece, 0);
       }
     }
@@ -440,7 +459,7 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
               
               if (jumpOver == 0) {
                 // all rook moves
-                if (pieceType == ROOK && (PIECE_COLOR[targetPiece] == (side ^ 1)))
+                if (pieceType == ROOK /*&& PIECE_COLOR[targetPiece] == side ^ 1*/) // WARNING: potentially redudant second expression
                   moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
                 
                 // quiet cannon moves
@@ -449,7 +468,7 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
               }
 
               if (targetPiece) jumpOver++;
-              if (targetPiece && pieceType == CANNON && (PIECE_COLOR[targetPiece] == (side ^ 1)) && jumpOver == 2) {
+              if (targetPiece && pieceType == CANNON && /*PIECE_COLOR[targetPiece] == side ^ 1) &&*/ jumpOver == 2) {
                 // capture cannon moves
                 moveList = pushMove(pos, moveList, sourceSquare, targetSquare, pos.piece_on(sourceSquare), targetPiece, onlyCaptures);
                 break;
@@ -469,34 +488,10 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
   printf("breakpoint GENERATE MOVES BEGIN\n");
-  ExtMove* firstMove = moveList;
+  
+  //ExtMove* firstMove = moveList;
   moveList = generateMoves(pos, moveList, false);
-  
-  /*Color us = pos.side_to_move();
-  Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
-  Square ksq = pos.square<KING>(us);
-  ExtMove* cur = moveList;
 
-  moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)
-                            : generate<NON_EVASIONS>(pos, moveList);
-  
-  while (cur != moveList)
-      if (  ((pinned && pinned & from_sq(*cur)) || from_sq(*cur) == ksq || type_of(*cur) == EN_PASSANT)
-          && !pos.legal(*cur))
-          *cur = (--moveList)->move;
-      else
-          ++cur;
-  */
-  
-  while (firstMove != moveList) {
-    
-    //*firstMove = (--moveList)->move;
-    --moveList;
-    std::cout << moveList->move << "\n";
-  }
-  
-  std::cout << moveList->move << "\n";
-  
   printf("breakpoint GENERATE MOVES END\n");
   return moveList;
 }

@@ -106,6 +106,7 @@ extern LimitsType Limits;
 
 void init();
 void clear();
+template<bool Root = true> uint64_t perftTest(Position& pos, Depth depth);
 
 } // namespace Search
 

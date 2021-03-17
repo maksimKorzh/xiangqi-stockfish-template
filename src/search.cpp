@@ -40,6 +40,12 @@ namespace Stockfish {
 namespace Search {
 
   LimitsType Limits;
+  
+  template<bool Root>
+  uint64_t perftTest(Position& pos, Depth depth) {
+    printf("Perft test!\n");
+    return 0ULL;
+  }
 }
 
 namespace Tablebases {
@@ -158,7 +164,7 @@ namespace {
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus, int depth);
   void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth);
-
+  
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
   template<bool Root>
@@ -168,11 +174,13 @@ namespace {
     StateInfo st;
     ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
 
-    uint64_t cnt, nodes = 0;
-    const bool leaf = (depth == 2);
+    //uint64_t cnt, nodes = 0;
+    //const bool leaf = (depth == 2);
     
+    printf("breakpoint RERFT 2: loop ove moves\n");
+        
     for (const auto& m : MoveList<LEGAL>(pos))
-    {printf("breakpoint RERFT MOVELIST\n");
+    {
         /*if (Root && depth <= 1)
             cnt = 1, nodes++;
         else
@@ -185,9 +193,13 @@ namespace {
         if (Root)
             sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
         */
-        sync_cout << UCI::move(m, pos.is_chess960());
+        //printf("move: %d\n", (int)m);
+        
+        std::cout << "move: " << UCI::move(m, pos.is_chess960()) << "\n";
     }
-    return nodes;
+    
+    printf("breakpoint RERFT END\n");
+    return 0ULL;
   }
 
 } // namespace
@@ -219,8 +231,6 @@ void Search::clear() {
 /// command. It searches from the root position and outputs the "bestmove".
 
 void MainThread::search() {
-  printf("breakpoint SEARCH BEGIN\n");
-
   if (Limits.perft)
   {
       nodes = perft<true>(rootPos, Limits.perft);
