@@ -146,10 +146,17 @@ public:
   bool pawn_passed(Color c, Square s) const;
   bool opposite_bishops() const;
   int  pawns_on_same_color_squares(Color c, Square s) const;
+  
+  // actually used
+  bool isSquareAttacked(Square s, Color c);
 
   // Doing and undoing moves
   void do_move(Move m, StateInfo& newSt);
   void do_move(Move m, StateInfo& newSt, bool givesCheck);
+  
+  // actually used
+  bool make_move(Move m, StateInfo& newSt, bool givesCheck);
+  
   void undo_move(Move m);
   void do_null_move(StateInfo& newSt);
   void undo_null_move();
@@ -372,8 +379,10 @@ inline Key Position::hash_key() const {
 }
 
 inline Key Position::key() const {
-  return st->rule50 < 14 ? st->key
-                         : st->key ^ make_key((st->rule50 - 14) / 8);
+  // avoid warning
+  return Key(0);
+  //return st->rule50 < 14 ? st->key
+  //                       : st->key ^ make_key((st->rule50 - 14) / 8);
 }
 
 inline Key Position::pawn_key() const {
@@ -472,7 +481,8 @@ inline void Position::move_piece(Square from, Square to) {
 }
 
 inline void Position::do_move(Move m, StateInfo& newSt) {
-  do_move(m, newSt, gives_check(m));
+  // with legal move validation
+  make_move(m, newSt, gives_check(m));
 }
 
 inline StateInfo* Position::state() const {

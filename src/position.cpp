@@ -208,7 +208,7 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
   CHAR_TO_PIECE['B'] = W_BISHOP;
   CHAR_TO_PIECE['E'] = W_BISHOP;
   CHAR_TO_PIECE['N'] = W_KNIGHT;
-  CHAR_TO_PIECE['H'] = W_BISHOP;
+  CHAR_TO_PIECE['H'] = W_KNIGHT;
   CHAR_TO_PIECE['C'] = W_CANNON;
   CHAR_TO_PIECE['R'] = W_ROOK;
   CHAR_TO_PIECE['K'] = W_KING;
@@ -671,11 +671,62 @@ bool Position::gives_check(Move m) const {
   }
 }
 
+// unused
+void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
+  // avoid warnings
+  if (move) {};
+  st = &newSt;
+  if (givesCheck) {};
+}
+
+// square attacked by the given side
+bool Position::isSquareAttacked(Square s, Color c) {
+  // by knights
+  for (int direction = 0; direction < 4; direction++) {
+    Square directionTarget = (Square)(s + DIAGONALS[direction]);
+    
+    if (board[directionTarget] == NO_PIECE) {
+      for (int offset = 0; offset < 2; offset++) {
+        Square knightTarget = (Square)(s + KNIGHT_ATTACK_OFFSETS[direction][offset]);
+        if (board[knightTarget] == ((c == WHITE) ? W_KNIGHT : B_KNIGHT)) return true;
+      }
+    }
+  }
+  
+  // by king (kings face each other), rooks & cannons
+  for (int direction = 0; direction < 4; direction++) {
+    Square directionTarget = (Square)(s + ORTHOGONALS[direction]);
+    int jumpOver = 0;
+    
+    while (board[directionTarget] != OFFBOARD) {
+      if (jumpOver == 0) {
+        if (board[directionTarget] == ((c == WHITE) ? W_ROOK : B_ROOK) ||
+          board[directionTarget] == ((c == WHITE) ? W_KING : B_KING))
+          return 1;
+      }
+
+      if (board[directionTarget] != NO_PIECE) jumpOver++;
+      if (jumpOver == 2 && board[directionTarget] == ((c == WHITE) ? W_CANNON : B_CANNON))
+        return true;
+      
+      directionTarget = (Square)(directionTarget + ORTHOGONALS[direction]);
+    }
+  }
+
+  // by pawns
+  for (int direction = 0; direction < 2; direction++) {
+    Square directionTarget = (Square)(s + PAWN_ATTACK_OFFSETS[c][direction]);
+    if (board[directionTarget] == ((c == WHITE) ? W_PAWN : B_PAWN)) return true;
+  }
+  
+  return false;
+}
+
 
 /// Position::do_move() makes a move, and saves all information necessary
 /// to a StateInfo object. The move is assumed to be pseudo legal.
  
-void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
+bool Position::make_move(Move move, StateInfo& newSt, bool givesCheck) {
   // avoid warning
   if (givesCheck) {}
 
@@ -698,12 +749,13 @@ void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
   // parse move
   Square sourceSquare = getSourceSquare(move);
   Square targetSquare = getTargetSquare(move);
-  //Piece sourcePiece = getSourcePiece(move);
+  Piece sourcePiece = getSourcePiece(move);
   //Piece targetPiece = getTargetPiece(move);
   int captureFlag = getCaptureFlag(move);
 
   // move piece
-  move_piece(sourceSquare, targetSquare);
+  board[targetSquare] = sourcePiece;
+  board[sourceSquare] = NO_PIECE;
   
   // hash piece
   //hashKey ^= pieceKeys[sourcePiece * board.length + sourceSquare];
@@ -721,12 +773,11 @@ void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
   // switch side to move
   sideToMove = (Color)(sideToMove ^ BLACK);
   //hashKey ^= sideKey;
-
-  // return illegal move if king is left in check 
-  /*if (isSquareAttacked(kingSquare[side ^ 1], side)) {
-    takeBack();
-    return 0;
-  } else return 1;*/
+  
+  if (isSquareAttacked(kingSquare[sideToMove ^ BLACK], sideToMove)) {
+    undo_move(move);
+    return false;
+  } else return true;
 }
 
 
@@ -741,10 +792,12 @@ void Position::undo_move(Move move) {
   // parse move   
   Square sourceSquare = getSourceSquare(move);
   Square targetSquare = getTargetSquare(move);
+  Piece sourcePiece = getSourcePiece(move);
   Piece targetPiece = getTargetPiece(move);
   
   // move piece
-  move_piece(targetSquare, sourceSquare);
+  board[sourceSquare] = sourcePiece;
+  board[targetSquare] = NO_PIECE;
   
   // restore captured piece
   if (getCaptureFlag(move)) put_piece(targetPiece, targetSquare);

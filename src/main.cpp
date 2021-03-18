@@ -40,14 +40,15 @@ int main(int argc, char* argv[]) {
   //Threads.set(size_t(Options["Threads"]));
   //Search::clear(); // After threads are up
   //Eval::NNUE::init();
-  
-  printf("breakpoint 13\n");
 
   Position pos;
   StateListPtr states(new std::deque<StateInfo>(1));
+  
+  // rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1
+  // r1ba1a3/4kn3/2n1b4/pNp1p1p1p/4c4/6P2/P1P2R2P/1CcC5/9/2BAKAB2 w - - 0 1
   pos.set("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1", &states->back());
   std::cout << pos << "\n";
-  Search::perftTest(pos, (Depth)1);
+  Search::perftTest(pos, (Depth)5);
   
   
   //UCI::loop(argc, argv);

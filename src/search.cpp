@@ -43,25 +43,47 @@ namespace Search {
   
 }
 
-// global perft
-void Search::perftTest(Position& pos, Depth depth) {
-  Depth d = depth; d = d + (Depth)0; // avoid warning
+uint64_t nodes_cnt = 0;
+
+// local perft driver
+void perftDriver(Position& pos, Depth depth) {
+  StateInfo st;
   
+  if (depth == 0)
+  {
+    nodes_cnt++;
+    return;
+  }
+  
+  for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
+  {   
+    if (pos.make_move(m, st, false) == false) continue;
+    perftDriver(pos, depth - 1);
+    pos.undo_move(m);
+  }
+}
+
+// global perft test
+void Search::perftTest(Position& pos, Depth depth) {
+  LimitsType limits;
+  limits.startTime = now();
   StateInfo st;
   
   for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
   {
     // print moves  
-    std::cout << "move: " << UCI::move(m, pos.is_chess960()) << "\n";
-    pos.do_move(m, st);
-    std::cout << pos << "\n";
-    getchar();
-    
+    if (pos.make_move(m, st, false) == false) continue;
+    uint64_t cum_nodes = nodes_cnt;
+    perftDriver(pos, depth - 1);
     pos.undo_move(m);
-    std::cout << pos << "\n";
-    getchar();
+    
+    uint64_t old_nodes = nodes_cnt - cum_nodes;
+    std::cout << "move: " << UCI::move(m, pos.is_chess960());
+    std::cout << " nodes: " << old_nodes <<"\n";
   }
   
+  std::cout << "Time spent: " << now() - limits.startTime << " ms\n";
+  std::cout << "Total nodes: " << nodes_cnt << "\n";
   return;
 }
 
