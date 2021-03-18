@@ -38,18 +38,28 @@ namespace Stockfish {
 /// board (by calling Position::do_move), a StateInfo object must be passed.
 
 struct StateInfo {
+  // Actually used
+  Key hashKey;
+  int rule60;
+  
+  
+  /////////////////////////////////////////////
+  //
+  // Everything below would be removed later
+  //
+  /////////////////////////////////////////////
 
   // Copied when making a move
+  Key    key;
   Key    pawnKey;
   Key    materialKey;
   Value  nonPawnMaterial[COLOR_NB];
   int    castlingRights;
-  int    rule50;
   int    pliesFromNull;
+  int    rule50;
   Square epSquare;
 
   // Not copied when making a move (will be recomputed anyhow)
-  Key        key;
   Bitboard   checkersBB;
   Piece      capturedPiece;
   StateInfo* previous;
@@ -210,14 +220,22 @@ private:
   
   // Data members
   Piece board[SQUARE_NB];
+  
+  // not used any more, would be removed later
   Bitboard byTypeBB[PIECE_TYPE_NB];
   Bitboard byColorBB[COLOR_NB];
   int pieceCount[PIECE_NB];
   int castlingRightsMask[SQUARE_NB];
   Square castlingRookSquare[CASTLING_RIGHT_NB];
   Bitboard castlingPath[CASTLING_RIGHT_NB];
+  
+  // actually used
+  int searchPly;
   int gamePly;
   Color sideToMove;
+  int rule60;
+  Key hashKey;
+  
   Score psq;
   Thread* thisThread;
   StateInfo* st;

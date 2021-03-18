@@ -47,10 +47,19 @@ namespace Search {
 void Search::perftTest(Position& pos, Depth depth) {
   Depth d = depth; d = d + (Depth)0; // avoid warning
   
+  StateInfo st;
+  
   for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
   {
     // print moves  
     std::cout << "move: " << UCI::move(m, pos.is_chess960()) << "\n";
+    pos.do_move(m, st);
+    std::cout << pos << "\n";
+    getchar();
+    
+    pos.undo_move(m);
+    std::cout << pos << "\n";
+    getchar();
   }
   
   return;

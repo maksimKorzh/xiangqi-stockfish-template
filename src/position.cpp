@@ -252,6 +252,9 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
     if (string(COORDINATES[s]).compare("xx") != 0) put_piece(NO_PIECE, s);
     else put_piece(OFFBOARD, s);
   }
+  
+  // reset repetition table
+  //for (let index in repetitionTable) repetitionTable[index] = 0;
 
   printf("breakpoint PARSE FEN reset pieces\n");
   ss >> token;
@@ -318,40 +321,7 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
       set_castling_right(c, rsq);
   }
 
-  //set_state(st);
-  
-  /* 4. En passant square.
-  // Ignore if square is invalid or not on side to move relative rank 6.
-  bool enpassant = false;
-
-  if (   ((ss >> col) && (col >= 'a' && col <= 'h'))
-      && ((ss >> row) && (row == (sideToMove == WHITE ? '6' : '3'))))
-  {
-      st->epSquare = make_square(File(col - 'a'), Rank(row - '1'));
-
-      // En passant square will be considered only if
-      // a) side to move have a pawn threatening epSquare
-      // b) there is an enemy pawn in front of epSquare
-      // c) there is no piece on epSquare or behind epSquare
-      // d) enemy pawn didn't block a check of its own color by moving forward
-      enpassant = pawn_attacks_bb(~sideToMove, st->epSquare) & pieces(sideToMove, PAWN)
-               && (pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove)))
-               && !(pieces() & (st->epSquare | (st->epSquare + pawn_push(sideToMove))))
-               && (   file_of(square<KING>(sideToMove)) == file_of(st->epSquare)
-                   || !(blockers_for_king(sideToMove) & (st->epSquare + pawn_push(~sideToMove))));
-  }
-
-  // It's necessary for st->previous to be intialized in this way because legality check relies on its existence
-  if (enpassant) {
-      st->previous = new StateInfo();
-      remove_piece(st->epSquare - pawn_push(sideToMove));
-      st->previous->checkersBB = attackers_to(square<KING>(~sideToMove)) & pieces(sideToMove);
-      st->previous->blockersForKing[WHITE] = slider_blockers(pieces(BLACK), square<KING>(WHITE), st->previous->pinners[BLACK]);
-      st->previous->blockersForKing[BLACK] = slider_blockers(pieces(WHITE), square<KING>(BLACK), st->previous->pinners[WHITE]);
-      put_piece(make_piece(~sideToMove, PAWN), st->epSquare - pawn_push(sideToMove));
-  }
-  else
-      st->epSquare = SQ_NONE;*/
+  set_state(st);  
   
   // there's no enpassant in xiangqi
   st->epSquare = SQ_NONE;
@@ -362,14 +332,6 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
   // Convert from fullmove starting from 1 to gamePly starting from 0,
   // handle also common incorrect FEN with fullmove = 0.
   gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
-
-  //chess960 = isChess960;
-  //thisThread = th;
-
-  st->accumulator.state[WHITE] = Eval::NNUE::INIT;
-  st->accumulator.state[BLACK] = Eval::NNUE::INIT;
-
-  assert(pos_is_ok());
 
   return *this;
 }
@@ -421,37 +383,9 @@ void Position::set_check_info(StateInfo* si) const {
 
 void Position::set_state(StateInfo* si) const {
 
-  si->key = si->materialKey = 0;
-  si->pawnKey = Zobrist::noPawns;
-  si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
-  //si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
-
-  //set_check_info(si);
-
-  /*for (Bitboard b = pieces(); b; )
-  {
-      Square s = pop_lsb(&b);
-      Piece pc = piece_on(s);
-      si->key ^= Zobrist::psq[pc][s];
-
-      if (type_of(pc) == PAWN)
-          si->pawnKey ^= Zobrist::psq[pc][s];
-
-      else if (type_of(pc) != KING)
-          si->nonPawnMaterial[color_of(pc)] += PieceValue[MG][pc];
-  }*/
-
-  /*if (si->epSquare != SQ_NONE)
-      si->key ^= Zobrist::enpassant[file_of(si->epSquare)];
-
-  if (sideToMove == BLACK)
-      si->key ^= Zobrist::side;
-
-  si->key ^= Zobrist::castling[si->castlingRights];
-
-  for (Piece pc : Pieces)
-      for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
-          si->materialKey ^= Zobrist::psq[pc][cnt];*/
+  si->key = 0;
+  si->rule50 = 0;
+  
 }
 
 
@@ -750,75 +684,91 @@ bool Position::gives_check(Move m) const {
 /// Position::do_move() makes a move, and saves all information necessary
 /// to a StateInfo object. The move is assumed to be pseudo legal.
  
-void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
+void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
+  // update plies
+  ++searchPly;
+  ++gamePly;
+      
+  // update repetition table
+  //repetitionTable[gamePly] = hashKey;
 
-  return;
+  // push to stack
+  st->hashKey = hashKey;
+  st->rule60 = rule60;
+  
+  // copy current state info
+  std::memcpy(&newSt, st, offsetof(StateInfo, key));
+  newSt.previous = st;
+  st = &newSt;
+  
+  // parse move
+  Square sourceSquare = getSourceSquare(move);
+  Square targetSquare = getTargetSquare(move);
+  //Piece sourcePiece = getSourcePiece(move);
+  //Piece targetPiece = getTargetPiece(move);
+  int captureFlag = getCaptureFlag(move);
+
+  // move piece
+  move_piece(sourceSquare, targetSquare);
+  
+  // hash piece
+  //hashKey ^= pieceKeys[sourcePiece * board.length + sourceSquare];
+  //hashKey ^= pieceKeys[sourcePiece * board.length + targetSquare];
+  
+  if (captureFlag) {
+    rule60 = 0;
+    //hashKey ^= pieceKeys[targetPiece * board.length + targetSquare];
+  } else rule60++;
+
+  // update king square
+  //if (board[targetSquare] == RED_KING || board[targetSquare] == BLACK_KING)
+  //  kingSquare[side] = targetSquare;
+  
+  // switch side to move
+  sideToMove = (Color)(sideToMove ^ BLACK);
+  //hashKey ^= sideKey;
+
+  // return illegal move if king is left in check 
+  /*if (isSquareAttacked(kingSquare[side ^ 1], side)) {
+    takeBack();
+    return 0;
+  } else return 1;*/
 }
 
 
 /// Position::undo_move() unmakes a move. When it returns, the position should
 /// be restored to exactly the same state as before the move was made.
 
-void Position::undo_move(Move m) {
-
-  assert(is_ok(m));
-
-  sideToMove = ~sideToMove;
-
-  Color us = sideToMove;
-  Square from = from_sq(m);
-  Square to = to_sq(m);
-  Piece pc = piece_on(to);
-
-  assert(empty(from) || type_of(m) == CASTLING);
-  assert(type_of(st->capturedPiece) != KING);
-
-  if (type_of(m) == PROMOTION)
-  {
-      assert(relative_rank(us, to) == RANK_8);
-      assert(type_of(pc) == promotion_type(m));
-      assert(type_of(pc) >= KNIGHT && type_of(pc) <= QUEEN);
-
-      remove_piece(to);
-      pc = make_piece(us, PAWN);
-      put_piece(pc, to);
-  }
-
-  if (type_of(m) == CASTLING)
-  {
-      Square rfrom, rto;
-      do_castling<false>(us, from, to, rfrom, rto);
-  }
-  else
-  {
-      move_piece(to, from); // Put the piece back at the source square
-
-      if (st->capturedPiece)
-      {
-          Square capsq = to;
-
-          if (type_of(m) == EN_PASSANT)
-          {
-              capsq -= pawn_push(us);
-
-              assert(type_of(pc) == PAWN);
-              assert(to == st->previous->epSquare);
-              assert(relative_rank(us, to) == RANK_6);
-              assert(piece_on(capsq) == NO_PIECE);
-              assert(st->capturedPiece == make_piece(~us, PAWN));
-          }
-
-          put_piece(st->capturedPiece, capsq); // Restore the captured piece
-      }
-  }
-
-  // Finally point our state pointer back to the previous state
-  st = st->previous;
+void Position::undo_move(Move move) {
+  // update plies
+  --searchPly;
   --gamePly;
 
-  assert(pos_is_ok());
-}
+  // parse move   
+  Square sourceSquare = getSourceSquare(move);
+  Square targetSquare = getTargetSquare(move);
+  Piece targetPiece = getTargetPiece(move);
+  
+  // move piece
+  move_piece(targetSquare, sourceSquare);
+  
+  // restore captured piece
+  if (getCaptureFlag(move)) put_piece(targetPiece, targetSquare);
+  
+  // update king square
+  //if (board[sourceSquare] == RED_KING || board[sourceSquare] == BLACK_KING)
+  //  kingSquare[side ^ 1] = sourceSquare;
 
+  // switch side to move
+  sideToMove = (Color)(sideToMove ^ BLACK);
+  
+  // restore state variables
+  rule60 = st->rule60;
+  hashKey = st->hashKey;
+  
+  // Finally point our state pointer back to the previous state
+  st = st->previous;
+}
 
 /// Position::do_castling() is a helper used to do/undo a castling move. This
 /// is a bit tricky in Chess960 where from/to squares can overlap.
