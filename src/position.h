@@ -153,11 +153,17 @@ public:
   void undo_move(Move m);
   void do_null_move(StateInfo& newSt);
   void undo_null_move();
+  
+  // king square interface
+  void set_king_square(Color side, Square s);
+  Square get_king_square(Color side) const;
 
   // Static Exchange Evaluation
   bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
 
   // Accessing hash keys
+  Key hash_key() const; // actually used
+  
   Key key() const;
   Key key_after(Move m) const;
   Key material_key() const;
@@ -171,6 +177,7 @@ public:
   bool is_draw(int ply) const;
   bool has_game_cycle(int ply) const;
   bool has_repeated() const;
+  int rule60_count() const;
   int rule50_count() const;
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
@@ -235,6 +242,7 @@ private:
   Color sideToMove;
   int rule60;
   Key hashKey;
+  Square kingSquare[2];
   
   Score psq;
   Thread* thisThread;
@@ -359,6 +367,10 @@ inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
   return popcount(pieces(c, PAWN) & ((DarkSquares & s) ? DarkSquares : ~DarkSquares));
 }
 
+inline Key Position::hash_key() const {
+  return hashKey;
+}
+
 inline Key Position::key() const {
   return st->rule50 < 14 ? st->key
                          : st->key ^ make_key((st->rule50 - 14) / 8);
@@ -386,6 +398,10 @@ inline Value Position::non_pawn_material() const {
 
 inline int Position::game_ply() const {
   return gamePly;
+}
+
+inline int Position::rule60_count() const {
+  return rule60;
 }
 
 inline int Position::rule50_count() const {

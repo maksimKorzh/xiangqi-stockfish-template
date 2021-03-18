@@ -50,16 +50,16 @@ namespace {
 const char *COORDINATES[] = {
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
-  "xx", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "xx", 
+  "xx", "a0", "b0", "c0", "d0", "e0", "f0", "g0", "h0", "i0", "xx",
+  "xx", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "xx", 
+  "xx", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "i2", "xx", 
+  "xx", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "i3", "xx", 
+  "xx", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "i4", "xx", 
+  "xx", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "i5", "xx", 
+  "xx", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "i6", "xx", 
+  "xx", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "i7", "xx", 
+  "xx", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "i8", "xx", 
+  "xx", "a9", "b9", "c9", "d9", "e9", "f9", "g9", "h9", "i9", "xx",
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
   "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
 };
@@ -93,27 +93,11 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 
   os << "   a   b   c   d   e   f   g   h   i\n";
   os << "\nSide to move: " << (pos.side_to_move() == WHITE ? "r" : "b");
-     //<< "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
-     //<< std::setfill('0') << std::setw(16) << pos.key();
-     //<< std::setfill(' ') << std::dec << "\nCheckers: ";
-
-  //for (Bitboard b = pos.checkers(); b; )
-  //    os << UCI::square(pop_lsb(&b)) << " ";
-
-  /*if (    int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
-      && !pos.can_castle(ANY_CASTLING))
-  {
-      //StateInfo st;
-      //ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
-
-      //Position p;
-      //p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
-      //Tablebases::ProbeState s1, s2;
-      //Tablebases::WDLScore wdl = Tablebases::probe_wdl(p, &s1);
-      //int dtz = Tablebases::probe_dtz(p, &s2);
-      //os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
-      //   << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
-  }*/
+  os << "\nHash key:     " << pos.hash_key();
+  os << "\nKing squares: ";
+  os << COORDINATES[pos.get_king_square(WHITE)] << " ";
+  os << COORDINATES[pos.get_king_square(BLACK)];
+  os << "\nRule 60:     " << pos.rule60_count() << "\n";
 
   return os;
 }
@@ -253,12 +237,19 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
     else put_piece(OFFBOARD, s);
   }
   
+  // reset king squares
+  set_king_square(WHITE, SQ_NONE);
+  set_king_square(BLACK, SQ_NONE);
+  
+  // reset plies
+  searchPly = 0;
+  gamePly = 0;
+  
   // reset repetition table
   //for (let index in repetitionTable) repetitionTable[index] = 0;
 
   printf("breakpoint PARSE FEN reset pieces\n");
   ss >> token;
-
   
   for (Rank r = RANK_14; r >= RANK_1; --r)
   {
@@ -268,8 +259,8 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
       if (piece_on(s) != OFFBOARD) {
         // 1. Piece placement
         if ((token >= 'a' && token <= 'z') || (token >= 'A' && token <= 'Z')) {
-          //if (token == 'K') king_sq[WHITE] = square;
-          //else if (token == 'k') king_sq[BLACK] = square;
+          if (token == 'K') set_king_square(WHITE, s);
+          else if (token == 'k') set_king_square(BLACK, s);
           put_piece(CHAR_TO_PIECE[token], s);
           ss >> token;
         }
@@ -685,6 +676,9 @@ bool Position::gives_check(Move m) const {
 /// to a StateInfo object. The move is assumed to be pseudo legal.
  
 void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
+  // avoid warning
+  if (givesCheck) {}
+
   // update plies
   ++searchPly;
   ++gamePly;
@@ -720,9 +714,9 @@ void Position::do_move(Move move, StateInfo& newSt, bool givesCheck) {
     //hashKey ^= pieceKeys[targetPiece * board.length + targetSquare];
   } else rule60++;
 
-  // update king square
-  //if (board[targetSquare] == RED_KING || board[targetSquare] == BLACK_KING)
-  //  kingSquare[side] = targetSquare;
+  // update king square (note: accessing data fields directly for performance reasons)
+  if (board[targetSquare] == W_KING || board[targetSquare] == B_KING)
+    kingSquare[sideToMove] = targetSquare;
   
   // switch side to move
   sideToMove = (Color)(sideToMove ^ BLACK);
@@ -756,8 +750,8 @@ void Position::undo_move(Move move) {
   if (getCaptureFlag(move)) put_piece(targetPiece, targetSquare);
   
   // update king square
-  //if (board[sourceSquare] == RED_KING || board[sourceSquare] == BLACK_KING)
-  //  kingSquare[side ^ 1] = sourceSquare;
+  if (board[sourceSquare] == W_KING || board[sourceSquare] == B_KING)
+    kingSquare[sideToMove ^ 1] = sourceSquare;
 
   // switch side to move
   sideToMove = (Color)(sideToMove ^ BLACK);
@@ -848,6 +842,13 @@ void Position::undo_null_move() {
   sideToMove = ~sideToMove;
 }
 
+void Position::set_king_square(Color side, Square s) {
+  kingSquare[side] = s;
+}
+
+Square Position::get_king_square(Color side) const {
+  return kingSquare[side];
+}
 
 /// Position::key_after() computes the new hash key after the given move. Needed
 /// for speculative prefetch. It doesn't recognize special moves like castling,
