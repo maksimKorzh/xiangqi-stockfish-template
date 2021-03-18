@@ -86,7 +86,7 @@ public:
   Position& operator=(const Position&) = delete;
 
   // FEN string input/output
-  Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
+  Position& set(const std::string& fenStr, StateInfo* si);
   Position& set(const std::string& code, Color c, StateInfo* si);
   std::string fen() const;
 

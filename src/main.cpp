@@ -33,57 +33,24 @@ using namespace Stockfish;
 // rnbakabnr/9/1c5c1/p1p1p1p1p/2P6/9/P111P1P1P/1C5C1/9/RNBAKABNR w - - 0 1
 
 int main(int argc, char* argv[]) {
-  printf("breakpoint 1\n");
-  
   std::cout << engine_info() << std::endl; 
-  
-  printf("breakpoint 2\n");
-  
   CommandLine::init(argc, argv);
-  
-  printf("breakpoint 3\n");
-  
   UCI::init(Options);
-  
-  printf("breakpoint 4\n");
-  
-  Tune::init();
-  
-  printf("breakpoint 5\n");
-  
-  //PSQT::init();
-  
-  printf("breakpoint 6\n");
-  
-  //Bitboards::init();
-  
-  printf("breakpoint 7\n");
-  
-  Position::init();
-  
-  printf("breakpoint 8\n");
-  
-  Bitbases::init();
-  
-  printf("breakpoint 9\n"); 
-  
-  //Endgames::init();
-  
-  printf("breakpoint 10\n"); 
-  
-  Threads.set(size_t(Options["Threads"]));
-  
-  printf("breakpoint 11\n");
-  
-  Search::clear(); // After threads are up
-  
-  printf("breakpoint 12\n");
-  
-  Eval::NNUE::init();
+  //Position::init();  
+  //Threads.set(size_t(Options["Threads"]));
+  //Search::clear(); // After threads are up
+  //Eval::NNUE::init();
   
   printf("breakpoint 13\n");
 
-  UCI::loop(argc, argv);
+  Position pos;
+  StateListPtr states(new std::deque<StateInfo>(1));
+  pos.set("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1", &states->back());
+  std::cout << pos << "\n";
+  Search::perftTest(pos, (Depth)1);
+  
+  
+  //UCI::loop(argc, argv);
 
   Threads.set(0);
   return 0;

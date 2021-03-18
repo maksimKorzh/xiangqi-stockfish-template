@@ -85,7 +85,6 @@ typedef std::vector<RootMove> RootMoves;
 /// search the current move, maximum depth/time, or if we are in analysis mode.
 
 struct LimitsType {
-
   LimitsType() { // Init explicitly due to broken value-initialization of non POD in MSVC
     time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = npmsec = movetime = TimePoint(0);
     movestogo = depth = mate = perft = infinite = 0;
@@ -106,7 +105,7 @@ extern LimitsType Limits;
 
 void init();
 void clear();
-template<bool Root = true> uint64_t perftTest(Position& pos, Depth depth);
+void perftTest(Position& pos, Depth depth);
 
 } // namespace Search
 

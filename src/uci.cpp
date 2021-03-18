@@ -68,7 +68,7 @@ namespace {
         return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
-    pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+    pos.set(fen, &states->back()); // changed to avoid error
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
@@ -85,7 +85,7 @@ namespace {
 
     StateListPtr states(new std::deque<StateInfo>(1));
     Position p;
-    p.set(pos.fen(), Options["UCI_Chess960"], &states->back(), Threads.main());
+    p.set(pos.fen(), &states->back()); // changed to avoid error
 
     Eval::NNUE::verify();
 
@@ -234,7 +234,7 @@ void UCI::loop(int argc, char* argv[]) {
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));
 
-  pos.set(StartFEN, false, &states->back(), Threads.main());
+  pos.set(StartFEN, &states->back());
 
   for (int i = 1; i < argc; ++i)
       cmd += std::string(argv[i]) + " ";
