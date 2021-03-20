@@ -273,7 +273,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
       else if (token == "d")        sync_cout << pos << sync_endl;
-      else if (token == "eval")     trace_eval(pos);
+      else if (token == "eval")     Eval::evaluate(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else if (!token.empty() && token[0] != '#')
           sync_cout << "Unknown command: " << cmd << sync_endl;

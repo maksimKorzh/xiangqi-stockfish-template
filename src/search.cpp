@@ -249,6 +249,8 @@ void Search::sync_search(Position& pos, LimitsType& limits) {
       Search::perftTest(pos, limits.perft);
       return;
   }
+  
+  
 }
 
 
