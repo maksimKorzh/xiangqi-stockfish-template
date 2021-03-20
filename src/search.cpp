@@ -29,7 +29,7 @@
 #include "movepick.h"
 #include "position.h"
 #include "search.h"
-#include "thread.h"
+//#include "thread.h"
 #include "timeman.h"
 #include "tt.h"
 #include "uci.h"
@@ -41,50 +41,6 @@ namespace Search {
 
   LimitsType Limits;  
   
-}
-
-uint64_t nodes_cnt = 0;
-
-// local perft driver
-void perftDriver(Position& pos, Depth depth) {
-  StateInfo st;
-  
-  if (depth == 0)
-  {
-    nodes_cnt++;
-    return;
-  }
-  
-  for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
-  {   
-    if (pos.make_move(m, st, false) == false) continue;
-    perftDriver(pos, depth - 1);
-    pos.undo_move(m);
-  }
-}
-
-// global perft test
-void Search::perftTest(Position& pos, Depth depth) {
-  LimitsType limits;
-  limits.startTime = now();
-  StateInfo st;
-  
-  for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
-  {
-    // print moves  
-    if (pos.make_move(m, st, false) == false) continue;
-    uint64_t cum_nodes = nodes_cnt;
-    perftDriver(pos, depth - 1);
-    pos.undo_move(m);
-    
-    uint64_t old_nodes = nodes_cnt - cum_nodes;
-    std::cout << "move: " << UCI::move(m, pos.is_chess960());
-    std::cout << " nodes: " << old_nodes <<"\n";
-  }
-  
-  std::cout << "Time spent: " << now() - limits.startTime << " ms\n";
-  std::cout << "Total nodes: " << nodes_cnt << "\n";
-  return;
 }
 
 namespace Tablebases {
@@ -206,35 +162,61 @@ namespace {
   
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
-  template<bool Root> // NO LONGER SUPPORTED HERE, SEE PERFT ABOVE
-  uint64_t perft(Position& pos, Depth depth) { 
+
+  uint64_t nodes_cnt = 0;
+
+  // local perft driver
+  void perftDriver(Position& pos, Depth depth) {
     StateInfo st;
-    ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
-
-    uint64_t cnt, nodes = 0;
-    const bool leaf = (depth == 2);
-        
-    for (const auto& m : MoveList<LEGAL>(pos))
+    
+    if (depth == 0)
     {
-        if (Root && depth <= 1)
-            cnt = 1, nodes++;
-        else
-        {
-            pos.do_move(m, st);
-            cnt = leaf ? MoveList<LEGAL>(pos).size() : perft<false>(pos, depth - 1);
-            nodes += cnt;
-            pos.undo_move(m);
-        }
-        if (Root)
-            sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
-        
-        std::cout << "move: " << UCI::move(m, pos.is_chess960()) << "\n";
+      nodes_cnt++;
+      return;
     }
-
-    return nodes;
+    
+    for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
+    {   
+      if (pos.make_move(m, st, false) == false) continue;
+      perftDriver(pos, depth - 1);
+      pos.undo_move(m);
+    }
+  }
+  
+  template<bool Root>
+  uint64_t perft(Position& pos, Depth depth) {
+    nodes_cnt = 0;
+    LimitsType limits;
+    limits.startTime = now();
+    StateInfo st;
+    
+    for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
+    {
+      // print moves  
+      if (pos.make_move(m, st, false) == false) continue;
+      uint64_t cum_nodes = nodes_cnt;
+      perftDriver(pos, depth - 1);
+      pos.undo_move(m);
+      
+      uint64_t old_nodes = nodes_cnt - cum_nodes;
+      std::cout << "move: " << UCI::move(m, pos.is_chess960());
+      std::cout << " nodes: " << old_nodes <<"\n";
+    }
+    
+    std::cout << "\nTime spent: " << now() - limits.startTime << " ms\n";
+    return nodes_cnt;
   }
 
 } // namespace
+
+
+/// globally seen perft routine wrapper
+
+void Search::perftTest(Position& pos, Depth depth) {
+  uint64_t nodes = perft<true>(pos, depth);
+  std::cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
+  return;
+}
 
 
 /// Search::init() is called at startup to initialize various lookup tables
@@ -256,6 +238,17 @@ void Search::clear() {
   TT.clear();
   Threads.clear();
   Tablebases::init(Options["SyzygyPath"]); // Free mapped files
+}
+
+/// Main search is started when the program receives the UCI 'go'
+/// command. It searches from the root position and outputs the "bestmove".
+
+void Search::sync_search(Position& pos, LimitsType& limits) {
+  if ((Depth)limits.perft)
+  {
+      Search::perftTest(pos, limits.perft);
+      return;
+  }
 }
 
 

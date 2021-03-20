@@ -140,8 +140,8 @@ search.o: search.cpp evaluate.h types.h tune.h misc.h movegen.h \
  nnue/architectures/../layers/input_slice.h \
  nnue/architectures/../layers/../nnue_common.h \
  nnue/architectures/../layers/affine_transform.h \
- nnue/architectures/../layers/clipped_relu.h search.h thread.h material.h \
- endgame.h pawns.h thread_win32_osx.h timeman.h tt.h uci.h \
+ nnue/architectures/../layers/clipped_relu.h search.h timeman.h thread.h \
+ material.h endgame.h pawns.h thread_win32_osx.h tt.h uci.h \
  syzygy/tbprobe.h syzygy/../search.h
 thread.o: thread.cpp movegen.h types.h tune.h search.h misc.h movepick.h \
  position.h bitboard.h evaluate.h psqt.h nnue/nnue_accumulator.h \

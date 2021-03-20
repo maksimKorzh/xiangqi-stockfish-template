@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   //Search::clear(); // After threads are up
   //Eval::NNUE::init();
 
-  Position pos;
+  /*Position pos;
   StateListPtr states(new std::deque<StateInfo>(1));
   
   // rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1
@@ -49,9 +49,9 @@ int main(int argc, char* argv[]) {
   pos.set("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1", &states->back());
   std::cout << pos << "\n";
   Search::perftTest(pos, (Depth)5);
+  */
   
-  
-  //UCI::loop(argc, argv);
+  UCI::loop(argc, argv);
 
   Threads.set(0);
   return 0;

@@ -106,6 +106,7 @@ extern LimitsType Limits;
 void init();
 void clear();
 void perftTest(Position& pos, Depth depth);
+void sync_search(Position& pos, LimitsType& limits);
 
 } // namespace Search
 

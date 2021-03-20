@@ -248,7 +248,6 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
   // reset repetition table
   //for (let index in repetitionTable) repetitionTable[index] = 0;
 
-  printf("breakpoint PARSE FEN reset pieces\n");
   ss >> token;
   
   for (Rank r = RANK_14; r >= RANK_1; --r)

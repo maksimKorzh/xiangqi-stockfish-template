@@ -121,10 +121,10 @@ namespace {
   // the thinking time and other parameters from the input string, then starts
   // the search.
 
-  void go(Position& pos, istringstream& is, StateListPtr& states) {
+  void go(Position& pos, istringstream& is) {
     Search::LimitsType limits;
     string token;
-    bool ponderMode = false;
+    //bool ponderMode = false;
 
     limits.startTime = now(); // As early as possible!
 
@@ -142,11 +142,11 @@ namespace {
         else if (token == "nodes")     is >> limits.nodes;
         else if (token == "movetime")  is >> limits.movetime;
         else if (token == "mate")      is >> limits.mate;
-        else if (token == "perft")     {}//Search::perftTest<true>(pos, (Depth)1);
+        else if (token == "perft")     is >> limits.perft;
         else if (token == "infinite")  limits.infinite = 1;
-        else if (token == "ponder")    ponderMode = true;
-
-    Threads.start_thinking(pos, states, limits, ponderMode);
+    
+    // start searching, output best move (or perft results)
+    Search::sync_search(pos, limits);
   }
 
 
@@ -174,7 +174,7 @@ namespace {
             cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
             if (token == "go")
             {
-               go(pos, is, states);
+               go(pos, is);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
             }
@@ -228,8 +228,6 @@ namespace {
 /// In addition to the UCI ones, also some additional debug commands are supported.
 
 void UCI::loop(int argc, char* argv[]) {
-  printf("breakpoint UCI BEGIN\n");
-  
   Position pos;
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));
@@ -265,7 +263,7 @@ void UCI::loop(int argc, char* argv[]) {
                     << "\nuciok"  << sync_endl;
 
       else if (token == "setoption")  setoption(is);
-      else if (token == "go")         go(pos, is, states);
+      else if (token == "go")         go(pos, is);
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame") Search::clear();
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;
