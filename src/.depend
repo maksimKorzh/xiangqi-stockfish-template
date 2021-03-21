@@ -1,9 +1,18 @@
-benchmark.o: benchmark.cpp position.h bitboard.h types.h evaluate.h
-bitbase.o: bitbase.cpp bitboard.h types.h
 bitboard.o: bitboard.cpp bitboard.h types.h misc.h
-endgame.o: endgame.cpp bitboard.h types.h endgame.h position.h evaluate.h \
- movegen.h
 evaluate.o: evaluate.cpp evaluate.h types.h position.h bitboard.h
+main.o: main.cpp bitboard.h types.h position.h evaluate.h search.h misc.h \
+ movepick.h movegen.h uci.h
+misc.o: misc.cpp misc.h types.h
 movegen.o: movegen.cpp movegen.h types.h position.h bitboard.h evaluate.h
 movepick.o: movepick.cpp movepick.h movegen.h types.h position.h \
  bitboard.h evaluate.h
+position.o: position.cpp bitboard.h types.h misc.h movegen.h position.h \
+ evaluate.h uci.h
+search.o: search.cpp evaluate.h types.h misc.h movegen.h position.h \
+ bitboard.h search.h movepick.h uci.h
+timeman.o: timeman.cpp search.h misc.h types.h movepick.h movegen.h \
+ position.h bitboard.h evaluate.h timeman.h uci.h
+uci.o: uci.cpp evaluate.h types.h movegen.h position.h bitboard.h \
+ search.h misc.h movepick.h timeman.h uci.h
+ucioption.o: ucioption.cpp evaluate.h types.h misc.h search.h movepick.h \
+ movegen.h position.h bitboard.h uci.h

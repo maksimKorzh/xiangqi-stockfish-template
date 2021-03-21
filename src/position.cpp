@@ -27,8 +27,6 @@
 #include "misc.h"
 #include "movegen.h"
 #include "position.h"
-#include "thread.h"
-#include "tt.h"
 #include "uci.h"
 
 using std::string;
@@ -866,7 +864,7 @@ void Position::do_null_move(StateInfo& newSt) {
   }
 
   st->key ^= Zobrist::side;
-  prefetch(TT.first_entry(key()));
+  //prefetch(TT.first_entry(key()));
 
   ++st->rule50;
   st->pliesFromNull = 0;

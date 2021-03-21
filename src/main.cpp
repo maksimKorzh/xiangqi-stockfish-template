@@ -19,11 +19,8 @@
 #include <iostream>
 
 #include "bitboard.h"
-#include "endgame.h"
 #include "position.h"
 #include "search.h"
-#include "thread.h"
-#include "tt.h"
 #include "uci.h"
 
 using namespace Stockfish;
@@ -51,6 +48,5 @@ int main(int argc, char* argv[]) {
   
   UCI::loop(argc, argv);
 
-  Threads.set(0);
   return 0;
 }

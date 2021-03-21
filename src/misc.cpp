@@ -57,7 +57,6 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #endif
 
 #include "misc.h"
-#include "thread.h"
 
 using namespace std;
 
@@ -266,7 +265,7 @@ std::string compiler_info() {
 
 
 /// Debug functions used mainly to collect run-time statistics
-static std::atomic<int64_t> hits[2], means[2];
+/*static std::atomic<int64_t> hits[2], means[2];
 
 void dbg_hit_on(bool b) { ++hits[0]; if (b) ++hits[1]; }
 void dbg_hit_on(bool c, bool b) { if (c) dbg_hit_on(b); }
@@ -281,21 +280,23 @@ void dbg_print() {
   if (means[0])
       cerr << "Total " << means[0] << " Mean "
            << (double)means[1] / means[0] << endl;
-}
+}*/
 
 
 /// Used to serialize access to std::cout to avoid multiple threads writing at
 /// the same time.
 
 std::ostream& operator<<(std::ostream& os, SyncCout sc) {
-
-  static std::mutex m;
+  // avoid warning
+  if (os) {}
+  if (sc) {}
+  /*static std::mutex m;
 
   if (sc == IO_LOCK)
       m.lock();
 
   if (sc == IO_UNLOCK)
-      m.unlock();
+      m.unlock();*/
 
   return os;
 }

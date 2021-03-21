@@ -34,9 +34,9 @@ BINDIR = $(PREFIX)/bin
 PGOBENCH = ./$(EXE) bench
 
 ### Source and object files
-SRCS = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp \
-	misc.cpp movegen.cpp movepick.cpp position.cpp \
-	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp
+SRCS = bitboard.cpp evaluate.cpp main.cpp \
+	   misc.cpp movegen.cpp movepick.cpp position.cpp \
+	   search.cpp timeman.cpp uci.cpp ucioption.cpp
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
