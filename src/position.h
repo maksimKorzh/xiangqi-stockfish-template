@@ -82,9 +82,6 @@ public:
   void set_king_square(Color side, Square s);
   Square get_king_square(Color side) const;
 
-  // Static Exchange Evaluation
-  //bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
-
   // Accessing hash keys
   Key hash_key() const; // actually used
 
@@ -133,15 +130,7 @@ private:
   
   // Data members
   Piece board[SQUARE_NB];
-  
-  // not used any more, would be removed later
-  Bitboard byTypeBB[PIECE_TYPE_NB];
-  Bitboard byColorBB[COLOR_NB];
-  int pieceCount[PIECE_NB];
-  int castlingRightsMask[SQUARE_NB];
-  Square castlingRookSquare[CASTLING_RIGHT_NB];
-  Bitboard castlingPath[CASTLING_RIGHT_NB];
-  
+    
   // actually used
   int searchPly;
   int gamePly;
