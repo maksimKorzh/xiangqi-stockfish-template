@@ -855,13 +855,13 @@ void Position::do_null_move(StateInfo& newSt) {
   assert(!checkers());
   assert(&newSt != st);
 
-  std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
+  //std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
 
   newSt.previous = st;
   st = &newSt;
 
-  st->dirtyPiece.dirty_num = 0;
-  st->dirtyPiece.piece[0] = NO_PIECE; // Avoid checks in UpdateAccumulator()
+  //st->dirtyPiece.dirty_num = 0;
+  //st->dirtyPiece.piece[0] = NO_PIECE; // Avoid checks in UpdateAccumulator()
   //st->accumulator.state[WHITE] = Eval::NNUE::EMPTY;
   //st->accumulator.state[BLACK] = Eval::NNUE::EMPTY;
 

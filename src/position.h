@@ -29,8 +29,6 @@
 #include "psqt.h"
 #include "types.h"
 
-#include "nnue/nnue_accumulator.h"
-
 namespace Stockfish {
 
 /// StateInfo struct stores information needed to restore a Position object to
@@ -69,8 +67,8 @@ struct StateInfo {
   int        repetition;
 
   // Used by NNUE
-  Eval::NNUE::Accumulator accumulator;
-  DirtyPiece dirtyPiece;
+  //Eval::NNUE::Accumulator accumulator;
+  //DirtyPiece dirtyPiece;
 };
 
 
@@ -194,7 +192,7 @@ public:
   bool pos_is_ok() const;
   void flip();
 
-  // Used by NNUE
+  // Used
   StateInfo* state() const;
 
 private:
