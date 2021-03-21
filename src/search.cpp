@@ -71,8 +71,7 @@ namespace {
       pos.undo_move(m);
     }
   }
-  
-  template<bool Root>
+
   uint64_t perft(Position& pos, Depth depth) {
     nodes_cnt = 0;
     LimitsType limits;
@@ -102,7 +101,7 @@ namespace {
 /// globally seen perft routine wrapper
 
 void Search::perftTest(Position& pos, Depth depth) {
-  uint64_t nodes = perft<true>(pos, depth);
+  uint64_t nodes = perft(pos, depth);
   std::cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
   return;
 }
