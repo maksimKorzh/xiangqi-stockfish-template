@@ -826,7 +826,7 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
   rto = relative_square(us, kingSide ? SQ_F1 : SQ_D1);
   to = relative_square(us, kingSide ? SQ_G1 : SQ_C1);
 
-  if (Do && Eval::useNNUE)
+  /*if (Do && Eval::useNNUE)
   {
       auto& dp = st->dirtyPiece;
       dp.piece[0] = make_piece(us, KING);
@@ -836,7 +836,7 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
       dp.from[1] = rfrom;
       dp.to[1] = rto;
       dp.dirty_num = 2;
-  }
+  }*/
 
   // Remove both pieces first since squares could overlap in Chess960
   remove_piece(Do ? from : to);
@@ -862,8 +862,8 @@ void Position::do_null_move(StateInfo& newSt) {
 
   st->dirtyPiece.dirty_num = 0;
   st->dirtyPiece.piece[0] = NO_PIECE; // Avoid checks in UpdateAccumulator()
-  st->accumulator.state[WHITE] = Eval::NNUE::EMPTY;
-  st->accumulator.state[BLACK] = Eval::NNUE::EMPTY;
+  //st->accumulator.state[WHITE] = Eval::NNUE::EMPTY;
+  //st->accumulator.state[BLACK] = Eval::NNUE::EMPTY;
 
   if (st->epSquare != SQ_NONE)
   {
@@ -1181,7 +1181,7 @@ bool Position::pos_is_ok() const {
               assert(0 && "pos_is_ok: Bitboards");
 
   StateInfo si = *st;
-  ASSERT_ALIGNED(&si, Eval::NNUE::kCacheLineSize);
+  //ASSERT_ALIGNED(&si, Eval::NNUE::kCacheLineSize);
 
   set_state(&si);
   if (std::memcmp(&si, st, sizeof(StateInfo)))

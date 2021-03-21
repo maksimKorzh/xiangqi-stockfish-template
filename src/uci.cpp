@@ -78,21 +78,6 @@ namespace {
     }
   }
 
-  // trace_eval() prints the evaluation for the current position, consistent with the UCI
-  // options set so far.
-
-  void trace_eval(Position& pos) {
-
-    StateListPtr states(new std::deque<StateInfo>(1));
-    Position p;
-    p.set(pos.fen(), &states->back()); // changed to avoid error
-
-    Eval::NNUE::verify();
-
-    sync_cout << "\n" << Eval::trace(p) << sync_endl;
-  }
-
-
   // setoption() is called when engine receives the "setoption" UCI command. The
   // function updates the UCI option ("name") to the given value ("value").
 
@@ -179,7 +164,7 @@ namespace {
                nodes += Threads.nodes_searched();
             }
             else
-               trace_eval(pos);
+               Eval::trace(pos);
         }
         else if (token == "setoption")  setoption(is);
         else if (token == "position")   position(pos, is, states);
@@ -273,7 +258,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "flip")     pos.flip();
       else if (token == "bench")    bench(pos, is, states);
       else if (token == "d")        sync_cout << pos << sync_endl;
-      else if (token == "eval")     Eval::evaluate(pos);
+      else if (token == "eval")     Eval::trace(pos);
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else if (!token.empty() && token[0] != '#')
           sync_cout << "Unknown command: " << cmd << sync_endl;
