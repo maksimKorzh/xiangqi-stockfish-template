@@ -21,9 +21,9 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = stockfish.exe
+EXE = xiangqi-stockfish.exe
 else
-EXE = stockfish
+EXE = xiangqi-stockfish
 endif
 
 ### Installation dir definitions
@@ -34,7 +34,7 @@ BINDIR = $(PREFIX)/bin
 PGOBENCH = ./$(EXE) bench
 
 ### Source and object files
-SRCS = bitboard.cpp evaluate.cpp main.cpp \
+SRCS = evaluate.cpp main.cpp \
 	   misc.cpp movegen.cpp position.cpp \
 	   search.cpp timeman.cpp uci.cpp ucioption.cpp
 
@@ -643,7 +643,7 @@ endif
 
 help:
 	@echo ""
-	@echo "To compile stockfish, type: "
+	@echo "To compile xiangqi stockfish, type: "
 	@echo ""
 	@echo "make target ARCH=arch [COMP=compiler] [COMPCXX=cxx]"
 	@echo ""

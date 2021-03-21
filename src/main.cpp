@@ -18,7 +18,6 @@
 
 #include <iostream>
 
-#include "bitboard.h"
 #include "position.h"
 #include "search.h"
 #include "uci.h"
