@@ -7,9 +7,8 @@ endgame.o: endgame.cpp bitboard.h types.h tune.h endgame.h position.h \
 evaluate.o: evaluate.cpp evaluate.h types.h tune.h position.h bitboard.h \
  psqt.h
 main.o: main.cpp bitboard.h types.h tune.h endgame.h position.h \
- evaluate.h psqt.h search.h misc.h movepick.h movegen.h syzygy/tbprobe.h \
- syzygy/../search.h thread.h material.h pawns.h thread_win32_osx.h tt.h \
- uci.h
+ evaluate.h psqt.h search.h misc.h movepick.h movegen.h thread.h \
+ material.h pawns.h thread_win32_osx.h tt.h uci.h
 material.o: material.cpp material.h endgame.h position.h bitboard.h \
  types.h tune.h evaluate.h psqt.h misc.h thread.h movepick.h movegen.h \
  pawns.h search.h thread_win32_osx.h
@@ -25,17 +24,14 @@ pawns.o: pawns.cpp bitboard.h types.h tune.h pawns.h misc.h position.h \
  search.h thread_win32_osx.h
 position.o: position.cpp bitboard.h types.h tune.h misc.h movegen.h \
  position.h evaluate.h psqt.h thread.h material.h endgame.h movepick.h \
- pawns.h search.h thread_win32_osx.h tt.h uci.h syzygy/tbprobe.h \
- syzygy/../search.h
+ pawns.h search.h thread_win32_osx.h tt.h uci.h
 psqt.o: psqt.cpp psqt.h types.h tune.h bitboard.h
 search.o: search.cpp evaluate.h types.h tune.h misc.h movegen.h \
  movepick.h position.h bitboard.h psqt.h search.h timeman.h thread.h \
- material.h endgame.h pawns.h thread_win32_osx.h tt.h uci.h \
- syzygy/tbprobe.h syzygy/../search.h
+ material.h endgame.h pawns.h thread_win32_osx.h tt.h uci.h
 thread.o: thread.cpp movegen.h types.h tune.h search.h misc.h movepick.h \
  position.h bitboard.h evaluate.h psqt.h thread.h material.h endgame.h \
- pawns.h thread_win32_osx.h uci.h syzygy/tbprobe.h syzygy/../search.h \
- tt.h
+ pawns.h thread_win32_osx.h uci.h tt.h
 timeman.o: timeman.cpp search.h misc.h types.h tune.h movepick.h \
  movegen.h position.h bitboard.h evaluate.h psqt.h timeman.h thread.h \
  material.h endgame.h pawns.h thread_win32_osx.h uci.h
@@ -44,16 +40,8 @@ tt.o: tt.cpp bitboard.h types.h tune.h misc.h thread.h material.h \
  search.h thread_win32_osx.h tt.h uci.h
 uci.o: uci.cpp evaluate.h types.h tune.h movegen.h position.h bitboard.h \
  psqt.h search.h misc.h movepick.h thread.h material.h endgame.h pawns.h \
- thread_win32_osx.h timeman.h tt.h uci.h syzygy/tbprobe.h \
- syzygy/../search.h
+ thread_win32_osx.h timeman.h tt.h uci.h
 ucioption.o: ucioption.cpp evaluate.h types.h tune.h misc.h search.h \
  movepick.h movegen.h position.h bitboard.h psqt.h thread.h material.h \
- endgame.h pawns.h thread_win32_osx.h tt.h uci.h syzygy/tbprobe.h \
- syzygy/../search.h
+ endgame.h pawns.h thread_win32_osx.h tt.h uci.h
 tune.o: tune.cpp types.h tune.h misc.h uci.h
-tbprobe.o: syzygy/tbprobe.cpp syzygy/../bitboard.h syzygy/../types.h \
- syzygy/../tune.h syzygy/../movegen.h syzygy/../position.h \
- syzygy/../bitboard.h syzygy/../evaluate.h syzygy/../psqt.h \
- syzygy/../search.h syzygy/../misc.h syzygy/../movepick.h \
- syzygy/../movegen.h syzygy/../position.h syzygy/../types.h \
- syzygy/../uci.h syzygy/tbprobe.h
