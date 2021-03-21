@@ -35,7 +35,7 @@ PGOBENCH = ./$(EXE) bench
 
 ### Source and object files
 SRCS = bitboard.cpp evaluate.cpp main.cpp \
-	   misc.cpp movegen.cpp movepick.cpp position.cpp \
+	   misc.cpp movegen.cpp position.cpp \
 	   search.cpp timeman.cpp uci.cpp ucioption.cpp
 
 OBJS = $(notdir $(SRCS:.cpp=.o))

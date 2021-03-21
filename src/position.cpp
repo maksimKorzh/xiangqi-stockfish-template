@@ -321,17 +321,6 @@ string Position::fen() const {
   return "fen";
 }
 
-
-/// Position::pseudo_legal() takes a random move and tests whether the move is
-/// pseudo legal. It is used to validate moves from TT that can be corrupted
-/// due to SMP concurrent access or hash position key aliasing.
-
-bool Position::pseudo_legal(const Move m) const {
-  // avoid warning
-  if (m) {}
-  return true;
-}
-
 // square attacked by the given side
 bool Position::isSquareAttacked(Square s, Color c) {
   // by knights
@@ -491,24 +480,6 @@ void Position::set_king_square(Color side, Square s) {
 
 Square Position::get_king_square(Color side) const {
   return kingSquare[side];
-}
-
-
-/// Position::is_draw() tests whether the position is drawn by 50-move rule
-/// or by repetition. It does not detect stalemates.
-
-bool Position::is_draw(int ply) const {
-  // avoid warnings
-  if (ply) {}
-  return false;
-}
-
-
-// Position::has_repeated() tests whether there has been at least one repetition
-// of positions since the last capture or pawn move.
-
-bool Position::has_repeated() const {
-    return false;
 }
 
 } // namespace Stockfish

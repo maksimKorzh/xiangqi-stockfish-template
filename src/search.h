@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "misc.h"
-#include "movepick.h"
 #include "types.h"
 
 namespace Stockfish {

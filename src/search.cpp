@@ -26,10 +26,9 @@
 #include "evaluate.h"
 #include "misc.h"
 #include "movegen.h"
-//#include "movepick.h"
 #include "position.h"
 #include "search.h"
-//#include "timeman.h"
+#include "timeman.h"
 #include "uci.h"
 
 namespace Stockfish {
@@ -87,7 +86,7 @@ namespace {
       pos.undo_move(m);
       
       uint64_t old_nodes = nodes_cnt - cum_nodes;
-      std::cout << "move: " << UCI::move(m, pos.is_chess960());
+      std::cout << "move: " << UCI::move(m);
       std::cout << " nodes: " << old_nodes <<"\n";
     }
     

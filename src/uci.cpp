@@ -93,7 +93,7 @@ namespace {
     if (Options.count(name))
         Options[name] = value;
     else
-        sync_cout << "No such option: " << name << sync_endl;
+        std::cout << "No such option: " << name << std::endl;
   }
 
 
@@ -198,7 +198,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "go")         go(pos, is);
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame") Search::clear();
-      else if (token == "isready")    sync_cout << "readyok" << sync_endl;
+      else if (token == "isready")    std::cout << "readyok" << std::endl;
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
@@ -261,10 +261,7 @@ std::string UCI::square(Square s) {
 /// normal chess mode, and in e1h1 notation in chess960 mode. Internally all
 /// castling moves are always encoded as 'king captures rook'.
 
-string UCI::move(Move m, bool chess960) {
-  // avoid "unused variable" warning
-  if (chess960) {};
-  
+string UCI::move(Move m) {
   // array to convert board square indices to coordinates
   const char *COORDINATES[] = {
     "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", 
@@ -299,14 +296,16 @@ string UCI::move(Move m, bool chess960) {
 /// (g1f3, a7a8q) to the corresponding legal Move, if any.
 
 Move UCI::to_move(const Position& pos, string& str) {
-
-  if (str.length() == 5) // Junior could send promotion piece in uppercase
+  // avoid warning
+  if (pos.side_to_move()) {}
+  if (str == "") {}
+  /*if (str.length() == 5) // Junior could send promotion piece in uppercase
       str[4] = char(tolower(str[4]));
 
   for (const auto& m : MoveList<LEGAL>(pos))
-      if (str == UCI::move(m, pos.is_chess960()))
+      if (str == UCI::move(m, false))
           return m;
-
+  */
   return MOVE_NONE;
 }
 
