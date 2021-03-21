@@ -69,7 +69,7 @@ namespace {
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
-        pos.do_move(m, states->back());
+        //pos.do_move(m, states->back());
     }
   }
 
