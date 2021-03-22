@@ -80,7 +80,6 @@ namespace {
     
     for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
     {
-      // print moves  
       if (pos.do_move(m, st) == false) continue;
       uint64_t cum_nodes = nodes_cnt;
       perftDriver(pos, depth - 1);

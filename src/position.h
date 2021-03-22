@@ -125,9 +125,12 @@ private:
   // Data members
   Piece board[SQUARE_NB];
     
-  // actually used
+  // search
   int searchPly;
   int gamePly;
+  int repetitionTable[1000];
+  
+  // board state
   Color sideToMove;
   int rule60;
   Key hashKey;

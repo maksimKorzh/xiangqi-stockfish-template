@@ -97,8 +97,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 }
 
 
-/// Position::init() initializes at startup the various arrays used to compute hash keys
-
+// initializes at startup the arrays used to compute hash keys
 void Position::init() {
   PRNG rng(1070372);
 
@@ -332,22 +331,22 @@ bool Position::do_move(Move move, StateInfo& newSt) {
   ++gamePly;
       
   // update repetition table
-  //repetitionTable[gamePly] = hashKey;
-
-  // push to stack
-  st->hashKey = hashKey;
-  st->rule60 = rule60;
+  repetitionTable[gamePly] = hashKey;
   
   // copy current state info
   std::memcpy(&newSt, st, offsetof(StateInfo, hashKey));
   newSt.previous = st;
   st = &newSt;
   
+  // push to stack
+  st->hashKey = hashKey;
+  st->rule60 = rule60;
+  
   // parse move
   Square sourceSquare = move_source_square(move);
   Square targetSquare = move_target_square(move);
   Piece sourcePiece = move_source_piece(move);
-  //Piece targetPiece = move_target_piece(move);
+  Piece targetPiece = move_target_piece(move);
   int captureFlag = move_capture_flag(move);
 
   // move piece
@@ -355,12 +354,12 @@ bool Position::do_move(Move move, StateInfo& newSt) {
   board[sourceSquare] = NO_PIECE;
   
   // hash piece
-  //hashKey ^= pieceKeys[sourcePiece * board.length + sourceSquare];
-  //hashKey ^= pieceKeys[sourcePiece * board.length + targetSquare];
+  hashKey ^= Zobrist::psq[sourcePiece][sourceSquare];
+  hashKey ^= Zobrist::psq[sourcePiece][targetSquare];
   
   if (captureFlag) {
     rule60 = 0;
-    //hashKey ^= pieceKeys[targetPiece * board.length + targetSquare];
+    hashKey ^= Zobrist::psq[targetPiece][targetSquare];
   } else rule60++;
 
   // update king square (note: accessing data fields directly for performance reasons)
@@ -369,8 +368,9 @@ bool Position::do_move(Move move, StateInfo& newSt) {
   
   // switch side to move
   sideToMove = (Color)(sideToMove ^ BLACK);
-  //hashKey ^= sideKey;
+  hashKey ^= Zobrist::side;
   
+  // undo move if king has been left exposed into a check
   if (isSquareAttacked(kingSquare[sideToMove ^ BLACK], sideToMove)) {
     undo_move(move);
     return false;
@@ -409,6 +409,7 @@ void Position::undo_move(Move move) {
   // restore state variables
   rule60 = st->rule60;
   hashKey = st->hashKey;
+  
   
   // Finally point our state pointer back to the previous state
   st = st->previous;
