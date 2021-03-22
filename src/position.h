@@ -51,7 +51,6 @@ typedef std::unique_ptr<std::deque<StateInfo>> StateListPtr;
 /// pieces, side to move, hash keys, castling info, etc. Important methods are
 /// make_move() and undo_move(), used by the search to update node info when
 /// traversing the search tree.
-class Thread;
 
 class Position {
 public:
@@ -83,8 +82,9 @@ public:
   void set_king_square(Color side, Square s);
   Square get_king_square(Color side) const;
 
-  // Accessing hash keys
-  Key hash_key() const; // actually used
+  // hash keys
+  Key generate_hash_key();
+  Key hash_key() const;
 
   // Other properties of the position
   Color side_to_move() const;
@@ -95,9 +95,6 @@ public:
   StateInfo* state() const;
 
 private:
-  // Initialization helpers (used while setting up a position)
-  void set_state(StateInfo* si) const;
-
   // Other helpers
   void put_piece(Piece pc, Square s);
   void remove_piece(Square s);
@@ -136,10 +133,8 @@ private:
   Key hashKey;
   Square kingSquare[2];
   
-  Score psq;
-  Thread* thisThread;
+  // state info pointer
   StateInfo* st;
-  bool chess960;
 };
 
 // print board

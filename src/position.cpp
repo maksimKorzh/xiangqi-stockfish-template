@@ -86,72 +86,48 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 
   os << "   a   b   c   d   e   f   g   h   i\n";
   os << "\nSide to move: " << (pos.side_to_move() == WHITE ? "r" : "b");
-  os << "\nHash key:     " << pos.hash_key();
+  os << "\n    Hash key: " << std::hex << pos.hash_key() << std::dec;
   os << "\nKing squares: ";
   os << COORDINATES[pos.get_king_square(WHITE)] << " ";
   os << COORDINATES[pos.get_king_square(BLACK)];
-  os << "\nRule 60:     " << pos.rule60_count() << "\n";
+  os << "\n     Rule 60: " << pos.rule60_count();
+  os << "\n    Game ply: " << pos.game_ply() << "\n";
 
   return os;
 }
 
 
-// Marcel van Kervinck's cuckoo algorithm for fast detection of "upcoming repetition"
-// situations. Description of the algorithm in the following paper:
-// https://marcelk.net/2013-04-06/paper/upcoming-rep-v2.pdf
-
-// First and second hash functions for indexing the cuckoo tables
-inline int H1(Key h) { return h & 0x1fff; }
-inline int H2(Key h) { return (h >> 16) & 0x1fff; }
-
-// Cuckoo tables with Zobrist hashes of valid reversible moves, and the moves themselves
-Key cuckoo[8192];
-Move cuckooMove[8192];
-
-
 /// Position::init() initializes at startup the various arrays used to compute hash keys
 
 void Position::init() {
-
   PRNG rng(1070372);
 
-  /*for (Piece pc : Pieces)
-      for (Square s = SQ_A1; s <= SQ_H8; ++s)
+  for (Piece pc : Pieces)
+      for (Square s = SQ_A1; s < SQUARE_NB; ++s)
           Zobrist::psq[pc][s] = rng.rand<Key>();
 
-  for (File f = FILE_A; f <= FILE_H; ++f)
-      Zobrist::enpassant[f] = rng.rand<Key>();
-
-  for (int cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr)
-      Zobrist::castling[cr] = rng.rand<Key>();
-
   Zobrist::side = rng.rand<Key>();
-  Zobrist::noPawns = rng.rand<Key>();
-
-  // Prepare the cuckoo tables
-  std::memset(cuckoo, 0, sizeof(cuckoo));
-  std::memset(cuckooMove, 0, sizeof(cuckooMove));
-  int count = 0;
-  for (Piece pc : Pieces)
-      for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
-          for (Square s2 = Square(s1 + 1); s2 <= SQ_H8; ++s2)
-              if ((type_of(pc) != PAWN) && (attacks_bb(type_of(pc), s1, 0) & s2))
-              {
-                  Move move = make_move(s1, s2);
-                  Key key = Zobrist::psq[pc][s1] ^ Zobrist::psq[pc][s2] ^ Zobrist::side;
-                  int i = H1(key);
-                  while (true)
-                  {
-                      std::swap(cuckoo[i], key);
-                      std::swap(cuckooMove[i], move);
-                      if (move == MOVE_NONE) // Arrived at empty slot?
-                          break;
-                      i = (i == H1(key)) ? H2(key) : H1(key); // Push victim to alternative slot
-                  }
-                  count++;
-             }
-  assert(count == 3668);*/
 }
+
+// generate unique position identifier
+Key Position::generate_hash_key() {
+  uint64_t finalKey = 0;
+      
+  // hash board position
+  for (Square s = SQ_A1; s < SQUARE_NB; ++s) {
+    if (board[s] != OFFBOARD) {
+      Piece piece = board[s];
+      if (piece != NO_PIECE) finalKey ^= Zobrist::psq[piece][s];
+    }
+  }
+  
+  
+  // hash board state variables
+  if (sideToMove == WHITE) finalKey ^= Zobrist::side;
+  
+  return (Key)finalKey;
+}
+
 
 
 /// Position::set() initializes the position object with the given FEN string.
@@ -238,7 +214,7 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
   searchPly = 0;
   gamePly = 0;
   
-  // reset repetition table
+  // reset repetition table (should be done on ucinewgame command, not here)
   //for (let index in repetitionTable) repetitionTable[index] = 0;
 
   ss >> token;
@@ -275,37 +251,23 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
   ss >> token;
   sideToMove = (token == 'b' ? BLACK : WHITE);
   ss >> token;
-
-  // 3. Castling availability. Compatible with 3 standards: Normal FEN standard,
-  // Shredder-FEN that uses the letters of the columns on which the rooks began
-  // the game instead of KQkq and also X-FEN standard that, in case of Chess960,
-  // if an inner rook is associated with the castling right, the castling tag is
-  // replaced by the file letter of the involved rook, as for the Shredder-FEN.
-  while ((ss >> token) && !isspace(token)) {}
-
-  set_state(st);  // needed ??
   
-  // 5-6. Halfmove clock and fullmove number
-  ss >> std::skipws >> st->rule60 >> gamePly;
+  // 5. Halfmove clock
+  for (int i = 0; i < 4; ++i) ss >> token;
+  ss >> rule60;
+  
+  // 6.  and fullmove number
+  ss >> token;
+  ss >> gamePly;
 
   // Convert from fullmove starting from 1 to gamePly starting from 0,
   // handle also common incorrect FEN with fullmove = 0.
   gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
+  
+  // generate hash key
+  hashKey = generate_hash_key();
 
   return *this;
-}
-
-
-/// Position::set_state() computes the hash keys of the position, and other
-/// data that once computed is updated incrementally as moves are made.
-/// The function is only used when a new position is set up, and to verify
-/// the correctness of the StateInfo data when running in debug mode.
-
-void Position::set_state(StateInfo* si) const {
-  
-  si->hashKey = 0;
-  //si->rule50 = 0;
-  
 }
 
 
