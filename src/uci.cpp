@@ -63,13 +63,13 @@ namespace {
         return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
-    pos.set(fen, &states->back()); // changed to avoid error
+    pos.set(StartFEN, &states->back());
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
-        states->emplace_back();
-        //pos.do_move(m, states->back());
+      states->emplace_back();
+      pos.do_move(m, states->back());
     }
   }
 
@@ -295,17 +295,12 @@ string UCI::move(Move m) {
 /// UCI::to_move() converts a string representing a move in coordinate notation
 /// (g1f3, a7a8q) to the corresponding legal Move, if any.
 
-Move UCI::to_move(const Position& pos, string& str) {
-  // avoid warning
-  if (pos.side_to_move()) {}
-  if (str == "") {}
-  /*if (str.length() == 5) // Junior could send promotion piece in uppercase
-      str[4] = char(tolower(str[4]));
-
-  for (const auto& m : MoveList<LEGAL>(pos))
-      if (str == UCI::move(m, false))
+Move UCI::to_move(const Position& pos, string& str) {  
+  // validate move
+  for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
+      if (str == UCI::move(m))
           return m;
-  */
+
   return MOVE_NONE;
 }
 
