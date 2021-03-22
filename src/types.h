@@ -109,68 +109,24 @@ typedef uint64_t Bitboard;
 constexpr int MAX_MOVES = 256;
 constexpr int MAX_PLY   = 246;
 
-/// A move needs 16 bits to be stored
-///
-/// bit  0- 5: destination square (from 0 to 63)
-/// bit  6-11: origin square (from 0 to 63)
-/// bit 12-13: promotion piece type - 2 (from KNIGHT-2 to QUEEN-2)
-/// bit 14-15: special move flag: promotion (1), en passant (2), castling (3)
-/// NOTE: en passant bit is set only when a pawn can be captured
-///
-/// Special cases are MOVE_NONE and MOVE_NULL. We can sneak these in because in
-/// any normal move destination square is always different from origin square
-/// while MOVE_NONE and MOVE_NULL have the same origin and destination square.
+
+/*                      MOVE ENCODING
+
+  0000 0000 0000 0000 0000 1111 1111  source square  0xFF
+  0000 0000 0000 1111 1111 0000 0000  target square  0xFF00
+  0000 0000 1111 0000 0000 0000 0000   source piece  0xF0000
+  0000 1111 0000 0000 0000 0000 0000   target piece  0xF00000
+  0001 0000 0000 0000 0000 0000 0000   capture flag  0x1000000
+
+*/
 
 enum Move : int {
   MOVE_NONE,
   MOVE_NULL = 65
 };
 
-enum MoveType {
-  NORMAL,
-  PROMOTION = 1 << 14,
-  EN_PASSANT = 2 << 14,
-  CASTLING  = 3 << 14
-};
-
 enum Color {
   WHITE, BLACK, COLOR_NB = 2
-};
-
-enum CastlingRights {
-  NO_CASTLING,
-  WHITE_OO,
-  WHITE_OOO = WHITE_OO << 1,
-  BLACK_OO  = WHITE_OO << 2,
-  BLACK_OOO = WHITE_OO << 3,
-
-  KING_SIDE      = WHITE_OO  | BLACK_OO,
-  QUEEN_SIDE     = WHITE_OOO | BLACK_OOO,
-  WHITE_CASTLING = WHITE_OO  | WHITE_OOO,
-  BLACK_CASTLING = BLACK_OO  | BLACK_OOO,
-  ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,
-
-  CASTLING_RIGHT_NB = 16
-};
-
-enum Phase {
-  PHASE_ENDGAME,
-  PHASE_MIDGAME = 128,
-  MG = 0, EG = 1, PHASE_NB = 2
-};
-
-enum ScaleFactor {
-  SCALE_FACTOR_DRAW    = 0,
-  SCALE_FACTOR_NORMAL  = 64,
-  SCALE_FACTOR_MAX     = 128,
-  SCALE_FACTOR_NONE    = 255
-};
-
-enum Bound {
-  BOUND_NONE,
-  BOUND_UPPER,
-  BOUND_LOWER,
-  BOUND_EXACT = BOUND_UPPER | BOUND_LOWER
 };
 
 enum Value : int {
@@ -212,56 +168,39 @@ enum Piece {
   PIECE_NB = 16
 };
 
-constexpr Value PieceValue[PHASE_NB][PIECE_NB] = {
-  { VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO,
-    VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO },
-  { VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO,
-    VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO }
-};
-
 typedef int Depth;
-
-enum : int {
-  DEPTH_QS_CHECKS     =  0,
-  DEPTH_QS_NO_CHECKS  = -1,
-  DEPTH_QS_RECAPTURES = -5,
-
-  DEPTH_NONE   = -6,
-
-  DEPTH_OFFSET = -7 // value used only for TT entry occupancy check
-};
 
 // zones of xiangqi board
 const int BOARD_ZONES[2][154] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
-    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
-    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+  0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+  0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
-    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
-    0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+  0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+  0, 1, 1, 1, 2, 2, 2, 1, 1, 1, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 // directions
@@ -307,6 +246,7 @@ const int BISHOP_MOVE_OFFSETS[] = {
   (UP + LEFT) * 2, (UP + RIGHT) * 2, (DOWN + LEFT) * 2, (DOWN + RIGHT) * 2
 };
 
+// board array squares
 enum Square : int {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1, SQ_I1, SQ_J1, SQ_K1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2, SQ_I2, SQ_J2, SQ_K2,
@@ -324,8 +264,6 @@ enum Square : int {
   SQ_A14, SQ_B14, SQ_C14, SQ_D14, SQ_E14, SQ_F14, SQ_G14, SQ_H14, SQ_I14, SQ_J14, SQ_K14,
 
   SQ_NONE,
-
-  SQUARE_ZERO = 0,
   SQUARE_NB   = 154
 };
 
@@ -437,30 +375,17 @@ ENABLE_BASE_OPERATORS_ON(Score)
 #undef ENABLE_INCR_OPERATORS_ON
 #undef ENABLE_BASE_OPERATORS_ON
 
-/*
-                           MOVE ENCODING
-
-    0000 0000 0000 0000 0000 1111 1111  source square  0xFF
-    0000 0000 0000 1111 1111 0000 0000  target square  0xFF00
-    0000 0000 1111 0000 0000 0000 0000   source piece  0xF0000
-    0000 1111 0000 0000 0000 0000 0000   target piece  0xF00000
-    0001 0000 0000 0000 0000 0000 0000   capture flag  0x1000000
-*/
-
 // store squares & pieces into a single number
-constexpr Move encodeMove(Square sourceSquare, Square targetSquare, Piece sourcePiece, Piece targetPiece, int captureFlag) {
-  return (Move)((sourceSquare) |
-         (targetSquare << 8) |
-         (sourcePiece << 16) |
-         (targetPiece << 20) |
-         (captureFlag << 24));
+constexpr Move move_encode(Square ss, Square ts, Piece sp, Piece tp, int cf) {
+  return (Move)((ss) | (ts << 8) | (sp << 16) | (tp << 20) | (cf << 24));
 }
 
-constexpr Square getSourceSquare(Move move) { return (Square)(move & 0xFF); }
-constexpr Square getTargetSquare(Move move) { return (Square)((move >> 8) & 0xFF); }
-constexpr Piece getSourcePiece(Move move) { return (Piece)((move >> 16) & 0xF); }
-constexpr Piece getTargetPiece(Move move) { return (Piece)((move >> 20) & 0xF); }
-constexpr int getCaptureFlag(Move move) { return (int)((move >> 24) & 0x1); }
+// parse move
+constexpr Square move_source_square(Move move) { return (Square)(move & 0xFF); }
+constexpr Square move_target_square(Move move) { return (Square)((move >> 8) & 0xFF); }
+constexpr Piece move_source_piece(Move move) { return (Piece)((move >> 16) & 0xF); }
+constexpr Piece move_target_piece(Move move) { return (Piece)((move >> 20) & 0xF); }
+constexpr int move_capture_flag(Move move) { return (int)((move >> 24) & 0x1); }
 
 /// Additional operators to add a Direction to a Square
 constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
@@ -494,53 +419,8 @@ inline Score operator*(Score s, bool b) {
   return b ? s : SCORE_ZERO;
 }
 
-constexpr Color operator~(Color c) {
-  return Color(c ^ BLACK); // Toggle color
-}
-
-constexpr Square flip_rank(Square s) { // Swap A1 <-> A8
-  return Square(s ^ SQ_K14);
-}
-
-constexpr Square flip_file(Square s) { // Swap A1 <-> H1
-  return Square(s ^ SQ_K1);
-}
-
-constexpr Piece operator~(Piece pc) {
-  return Piece(pc ^ 8); // Swap color of piece B_KNIGHT <-> W_KNIGHT
-}
-
-constexpr CastlingRights operator&(Color c, CastlingRights cr) {
-  return CastlingRights((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
-}
-
-constexpr Value mate_in(int ply) {
-  return VALUE_MATE - ply;
-}
-
-constexpr Value mated_in(int ply) {
-  return -VALUE_MATE + ply;
-}
-
 constexpr Square make_square(File f, Rank r) {
   return (Square)(r * 11 + f);//Square((r << 3) + f);
-}
-
-constexpr Piece make_piece(Color c, PieceType pt) {
-  return Piece((c << 3) + pt);
-}
-
-constexpr PieceType type_of(Piece pc) {
-  return PieceType(pc & 7);
-}
-
-inline Color color_of(Piece pc) {
-  assert(pc != NO_PIECE);
-  return Color(pc >> 3);
-}
-
-constexpr bool is_ok(Square s) {
-  return s >= SQ_A1 && s <= SQ_K14;
 }
 
 constexpr File file_of(Square s) {
@@ -551,63 +431,7 @@ constexpr Rank rank_of(Square s) {
   return Rank(s >> 3);
 }
 
-constexpr Square relative_square(Color c, Square s) {
-  return Square(s ^ (c * 56));
-}
 
-constexpr Rank relative_rank(Color c, Rank r) {
-  return Rank(r ^ (c * 7));
-}
-
-constexpr Rank relative_rank(Color c, Square s) {
-  return relative_rank(c, rank_of(s));
-}
-
-constexpr Direction pawn_push(Color c) {
-  return c == WHITE ? NORTH : SOUTH;
-}
-
-constexpr Square from_sq(Move m) {
-  return Square((m >> 6) & 0x3F);
-}
-
-constexpr Square to_sq(Move m) {
-  return Square(m & 0x3F);
-}
-
-constexpr int from_to(Move m) {
- return m & 0xFFF;
-}
-
-constexpr MoveType type_of(Move m) {
-  return MoveType(m & (3 << 14));
-}
-
-constexpr PieceType promotion_type(Move m) {
-  return PieceType(((m >> 12) & 3) + KNIGHT);
-}
-
-constexpr Move make_move(Square from, Square to) {
-  return Move((from << 6) + to);
-}
-
-constexpr Move reverse_move(Move m) {
-  return make_move(to_sq(m), from_sq(m));
-}
-
-template<MoveType T>
-constexpr Move make(Square from, Square to, PieceType pt = KNIGHT) {
-  return Move(T + ((pt - KNIGHT) << 12) + (from << 6) + to);
-}
-
-constexpr bool is_ok(Move m) {
-  return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
-}
-
-/// Based on a congruential pseudo random number generator
-constexpr Key make_key(uint64_t seed) {
-  return seed * 6364136223846793005ULL + 1442695040888963407ULL;
-}
 
 } // namespace Stockfish
 

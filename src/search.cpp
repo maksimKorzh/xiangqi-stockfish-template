@@ -65,12 +65,13 @@ namespace {
     
     for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
     {   
-      if (pos.make_move(m, st, false) == false) continue;
+      if (pos.do_move(m, st) == false) continue;
       perftDriver(pos, depth - 1);
       pos.undo_move(m);
     }
   }
-
+  
+  // perft test
   uint64_t perft(Position& pos, Depth depth) {
     nodes_cnt = 0;
     LimitsType limits;
@@ -80,7 +81,7 @@ namespace {
     for (const auto& m : MoveList<PSEUDO_LEGAL>(pos))
     {
       // print moves  
-      if (pos.make_move(m, st, false) == false) continue;
+      if (pos.do_move(m, st) == false) continue;
       uint64_t cum_nodes = nodes_cnt;
       perftDriver(pos, depth - 1);
       pos.undo_move(m);

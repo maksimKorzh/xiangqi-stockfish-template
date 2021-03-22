@@ -29,10 +29,10 @@ static ExtMove* pushMove(const Position& pos, ExtMove* moveList, Square sourceSq
     Move move = MOVE_NONE;
     
     if (targetPiece) {
-      move = encodeMove(sourceSquare, targetSquare, sourcePiece, targetPiece, 1);
+      move = move_encode(sourceSquare, targetSquare, sourcePiece, targetPiece, 1);
     } else {
       if (onlyCaptures == 0) {
-        move = encodeMove(sourceSquare, targetSquare, sourcePiece, targetPiece, 0);
+        move = move_encode(sourceSquare, targetSquare, sourcePiece, targetPiece, 0);
       }
     }
 

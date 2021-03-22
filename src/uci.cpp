@@ -280,8 +280,8 @@ string UCI::move(Move m) {
     "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx", "xx"
   }; 
 
-  Square from = getSourceSquare(m);
-  Square to = getTargetSquare(m);
+  Square from = move_source_square(m);
+  Square to = move_target_square(m);
 
   if (m == MOVE_NONE)
       return "(none)";

@@ -33,11 +33,8 @@ using std::string;
 namespace Stockfish {
 
 namespace Zobrist {
-
   Key psq[PIECE_NB][SQUARE_NB];
-  Key enpassant[FILE_NB];
-  Key castling[CASTLING_RIGHT_NB];
-  Key side, noPawns;
+  Key side;
 }
 
 namespace {
@@ -367,10 +364,7 @@ bool Position::isSquareAttacked(Square s, Color c) {
 /// Position::make_move() makes a move, and saves all information necessary
 /// to a StateInfo object. The move is assumed to be pseudo legal.
  
-bool Position::make_move(Move move, StateInfo& newSt, bool givesCheck) {
-  // avoid warning
-  if (givesCheck) {}
-
+bool Position::do_move(Move move, StateInfo& newSt) {
   // update plies
   ++searchPly;
   ++gamePly;
@@ -388,11 +382,11 @@ bool Position::make_move(Move move, StateInfo& newSt, bool givesCheck) {
   st = &newSt;
   
   // parse move
-  Square sourceSquare = getSourceSquare(move);
-  Square targetSquare = getTargetSquare(move);
-  Piece sourcePiece = getSourcePiece(move);
-  //Piece targetPiece = getTargetPiece(move);
-  int captureFlag = getCaptureFlag(move);
+  Square sourceSquare = move_source_square(move);
+  Square targetSquare = move_target_square(move);
+  Piece sourcePiece = move_source_piece(move);
+  //Piece targetPiece = move_target_piece(move);
+  int captureFlag = move_capture_flag(move);
 
   // move piece
   board[targetSquare] = sourcePiece;
@@ -431,17 +425,17 @@ void Position::undo_move(Move move) {
   --gamePly;
 
   // parse move   
-  Square sourceSquare = getSourceSquare(move);
-  Square targetSquare = getTargetSquare(move);
-  Piece sourcePiece = getSourcePiece(move);
-  Piece targetPiece = getTargetPiece(move);
+  Square sourceSquare = move_source_square(move);
+  Square targetSquare = move_target_square(move);
+  Piece sourcePiece = move_source_piece(move);
+  Piece targetPiece = move_target_piece(move);
   
   // move piece
   board[sourceSquare] = sourcePiece;
   board[targetSquare] = NO_PIECE;
   
   // restore captured piece
-  if (getCaptureFlag(move)) put_piece(targetPiece, targetSquare);
+  if (move_capture_flag(move)) put_piece(targetPiece, targetSquare);
   
   // update king square
   if (board[sourceSquare] == W_KING || board[sourceSquare] == B_KING)
@@ -457,8 +451,6 @@ void Position::undo_move(Move move) {
   // Finally point our state pointer back to the previous state
   st = st->previous;
 }
-
-
 
 
 /// Position::do(undo)_null_move() is used to do(undo) a "null move": it flips

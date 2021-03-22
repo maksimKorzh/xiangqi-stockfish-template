@@ -70,10 +70,12 @@ public:
   Piece moved_piece(Move m) const;
   Piece captured_piece() const;
   
+  // move generator
   bool isSquareAttacked(Square s, Color c);
-  bool make_move(Move m, StateInfo& newSt, bool givesCheck);
-  
+  bool do_move(Move m, StateInfo& newSt);
   void undo_move(Move m);
+  
+  // search
   void do_null_move(StateInfo& newSt);
   void undo_null_move();
   
@@ -94,16 +96,12 @@ public:
 
 private:
   // Initialization helpers (used while setting up a position)
-  void set_castling_right(Color c, Square rfrom);
   void set_state(StateInfo* si) const;
-  void set_check_info(StateInfo* si) const;
 
   // Other helpers
   void put_piece(Piece pc, Square s);
   void remove_piece(Square s);
   void move_piece(Square from, Square to);
-  template<bool Do>
-  void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
 
   /*
      
@@ -144,46 +142,57 @@ private:
   bool chess960;
 };
 
+// print board
 extern std::ostream& operator<<(std::ostream& os, const Position& pos);
 
+// get side to move
 inline Color Position::side_to_move() const {
   return sideToMove;
 }
 
+// get piece on the given board square
 inline Piece Position::piece_on(Square s) const {
   return board[s];
 }
 
+// extract piece from move's source square
 inline Piece Position::moved_piece(Move m) const {
-  return piece_on(getSourceSquare(m));
+  return piece_on(move_source_square(m));
 }
 
+// get unique position identifier
 inline Key Position::hash_key() const {
   return hashKey;
 }
 
+// get game history ply
 inline int Position::game_ply() const {
   return gamePly;
 }
 
+// get the value of 60 move rule counter
 inline int Position::rule60_count() const {
   return rule60;
 }
 
+// set piece on the given board square
 inline void Position::put_piece(Piece pc, Square s) {
   board[s] = pc;
 }
 
+// remove piece from the given board square
 inline void Position::remove_piece(Square s) {
   board[s] = NO_PIECE; // Not needed, overwritten by the capturing one
 }
 
+// move piece from source to target board square
 inline void Position::move_piece(Square from, Square to) {
   Piece pc = board[from];
   board[from] = NO_PIECE;
   board[to] = pc;
 }
 
+// get position state
 inline StateInfo* Position::state() const {
   return st;
 }
