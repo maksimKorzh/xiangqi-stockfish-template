@@ -146,12 +146,19 @@ static ExtMove* generateMoves(const Position& pos, ExtMove* moveList, bool onlyC
   return moveList;
 } 
 
-/// generate <PSEUDO_LEGAL> generates all the pseudo legal moves in the given position
-
+// generate <PSEUDO_LEGAL> generates all the pseudo legal moves
 template<>
 ExtMove* generate<PSEUDO_LEGAL>(const Position& pos, ExtMove* moveList) {
   // generate pseudo legal moves 
   return generateMoves(pos, moveList, false);
 }
+
+// generate <CAPTURES> generates all the pseudo legal captures
+template<>
+ExtMove* generate<CAPTURES>(const Position& pos, ExtMove* moveList) {
+  // generate pseudo legal moves 
+  return generateMoves(pos, moveList, true);
+}
+
 
 } // namespace Stockfish

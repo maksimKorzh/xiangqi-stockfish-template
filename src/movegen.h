@@ -28,13 +28,8 @@ namespace Stockfish {
 class Position;
 
 enum GenType {
-  CAPTURES,
-  QUIETS,
-  QUIET_CHECKS,
-  EVASIONS,
-  NON_EVASIONS,
-  LEGAL,
-  PSEUDO_LEGAL
+  PSEUDO_LEGAL,
+  CAPTURES
 };
 
 struct ExtMove {
