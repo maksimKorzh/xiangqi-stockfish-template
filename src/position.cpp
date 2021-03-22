@@ -91,7 +91,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
   os << COORDINATES[pos.get_king_square(WHITE)] << " ";
   os << COORDINATES[pos.get_king_square(BLACK)];
   os << "\n     Rule 60: " << pos.rule60_count();
-  os << "\n    Game ply: " << pos.game_ply() << "\n";
+  os << "\n    Game ply: " << pos.game_ply();
+  os << "\n  Search ply: " << pos.search_ply() << "\n";
 
   return os;
 }
@@ -127,6 +128,10 @@ Key Position::generate_hash_key() {
   return (Key)finalKey;
 }
 
+// get search ply (for debugging)
+void Position::reset_search_ply() {
+  searchPly = 0;
+}
 
 
 /// Position::set() initializes the position object with the given FEN string.

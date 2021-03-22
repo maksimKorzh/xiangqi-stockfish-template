@@ -71,6 +71,9 @@ namespace {
       states->emplace_back();
       pos.do_move(m, states->back());
     }
+    
+    // reset search ply
+    pos.reset_search_ply();
   }
 
   // setoption() is called when engine receives the "setoption" UCI command. The

@@ -88,6 +88,8 @@ public:
 
   // Other properties of the position
   Color side_to_move() const;
+  void reset_search_ply();
+  int search_ply() const;
   int game_ply() const;
   int rule60_count() const;
 
@@ -166,6 +168,11 @@ inline Key Position::hash_key() const {
 // get game history ply
 inline int Position::game_ply() const {
   return gamePly;
+}
+
+// get search ply (for debugging)
+inline int Position::search_ply() const {
+  return searchPly;
 }
 
 // get the value of 60 move rule counter
