@@ -63,7 +63,7 @@ namespace {
         return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
-    pos.set(StartFEN, &states->back());
+    pos.set(fen, &states->back());
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
@@ -200,7 +200,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "setoption")  setoption(is);
       else if (token == "go")         go(pos, is);
       else if (token == "position")   position(pos, is, states);
-      else if (token == "ucinewgame") Search::clear();
+      else if (token == "ucinewgame") {pos.reset_repetitions(); Search::clear();}
       else if (token == "isready")    std::cout << "readyok" << std::endl;
 
       // Additional custom non-UCI commands, mainly for debugging.

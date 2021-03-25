@@ -92,7 +92,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
   os << COORDINATES[pos.get_king_square(BLACK)];
   os << "\n     Rule 60: " << pos.rule60_count();
   os << "\n    Game ply: " << pos.game_ply();
-  os << "\n  Search ply: " << pos.search_ply() << "\n";
+  os << "\n  Search ply: " << pos.search_ply();
+  os << "\n repetitions: " << (pos.is_repetition() == true ? "true" : "false") << "\n";
 
   return os;
 }
@@ -284,7 +285,7 @@ string Position::fen() const {
 }
 
 // square attacked by the given side
-bool Position::isSquareAttacked(Square s, Color c) {
+bool Position::is_square_attacked(Square s, Color c) {
   // by knights
   for (int direction = 0; direction < 4; direction++) {
     Square directionTarget = (Square)(s + DIAGONALS[direction]);
@@ -376,7 +377,7 @@ bool Position::do_move(Move move, StateInfo& newSt) {
   hashKey ^= Zobrist::side;
   
   // undo move if king has been left exposed into a check
-  if (isSquareAttacked(kingSquare[sideToMove ^ BLACK], sideToMove)) {
+  if (is_square_attacked(kingSquare[sideToMove ^ BLACK], sideToMove)) {
     undo_move(move);
     return false;
   } else return true;
@@ -431,6 +432,12 @@ void Position::do_null_move(StateInfo& newSt) {
 
 void Position::undo_null_move() {
 
+}
+
+// reset repetition table
+void Position::reset_repetitions() {
+  for (int i = 0; i < MAX_MOVES; ++i)
+    repetitionTable[i] = 0;
 }
 
 void Position::set_king_square(Color side, Square s) {

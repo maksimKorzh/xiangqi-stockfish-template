@@ -70,14 +70,16 @@ public:
   Piece captured_piece() const;
   
   // move generator
-  bool isSquareAttacked(Square s, Color c);
+  bool is_square_attacked(Square s, Color c);
   bool do_move(Move m, StateInfo& newSt);
   void undo_move(Move m);
   
   // search
   void do_null_move(StateInfo& newSt);
   void undo_null_move();
-  
+  bool is_repetition() const;
+  void reset_repetitions();
+
   // king square interface
   void set_king_square(Color side, Square s);
   Square get_king_square(Color side) const;
@@ -130,7 +132,7 @@ private:
   // search
   int searchPly;
   int gamePly;
-  int repetitionTable[1000];
+  Key repetitionTable[MAX_MOVES];
   
   // board state
   Color sideToMove;
@@ -163,6 +165,16 @@ inline Piece Position::moved_piece(Move m) const {
 // get unique position identifier
 inline Key Position::hash_key() const {
   return hashKey;
+}
+
+// repetition detection
+inline bool Position::is_repetition() const {
+  for (int i = 0; i < MAX_MOVES; ++i) {
+    if (repetitionTable[i] == hashKey)
+      return true;
+  }
+  
+  return false;
 }
 
 // get game history ply

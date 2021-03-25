@@ -44,8 +44,11 @@ using Eval::evaluate;
 using namespace Search;
 
 namespace {
-
+  // temp
+  Move globalBestMove = MOVE_NONE;
   // define alpha beta search
+  Value search(Position& pos, Value alpha, Value beta, Depth depth);
+  
   // define quiescence
   
   // perft() is our utility to verify move generation. All the leaf nodes up
@@ -123,17 +126,68 @@ void Search::clear() {
 /// command. It searches from the root position and outputs the "bestmove".
 
 void Search::sync_search(Position& pos, LimitsType& limits) {
+  // do perft and return
   if ((Depth)limits.perft)
   {
       Search::perftTest(pos, limits.perft);
       return;
   }
+  
+  // search position
+  search(pos, -VALUE_INFINITE, VALUE_INFINITE, limits.depth);
+  std::cout << "bestmove " << UCI::move(globalBestMove) << "\n";
 }
 
 namespace {
 
-  // search<>() is the main search function for both PV and non-PV nodes
-  // alphabeta search body
+  // search() is the main search function for both PV and non-PV nodes
+  Value search(Position& pos, Value alpha, Value beta, Depth depth) {
+    Move bestMove;
+    Value bestValue, value; 
+    StateInfo st;
+    
+    bestValue = -VALUE_INFINITE;
+    bestMove = MOVE_NONE;
+    
+    // evaluate leaf nodes
+    if( depth == 0 ) return evaluate(pos);//quiesce( alpha, beta );
+    
+    // loop over moves
+    for (const auto& move : MoveList<PSEUDO_LEGAL>(pos))
+    {
+      // do move
+      if (pos.do_move(move, st) == false) continue;
+      
+      // recursive negamax call
+      value = -search(pos, -beta, -alpha, depth - 1);
+      
+      // take back
+      pos.undo_move(move);
+      
+      if (value > bestValue)
+      {
+        bestValue = value;
+
+        if (value > alpha) {
+          // update best move
+          bestMove = move;
+          globalBestMove = bestMove;
+          
+          // TODO update PV
+          
+          
+          alpha = value;
+          
+          if (value >= beta) {
+            return beta;
+          }
+        }
+      }
+    }
+    
+    globalBestMove = bestMove;
+    return bestValue;
+  }
 
 
 
